@@ -7,7 +7,7 @@
     "test": "vitest run",
     "prepare": "git config core.hooksPath .githooks",
     "build:firefox": "web-ext build --source-dir . --artifacts-dir dist --ignore-files test/ node_modules/ package.json package-lock.json .git .gitignore .githooks dist/",
-    "publish:firefox": "web-ext sign --source-dir . --artifacts-dir dist --ignore-files test/ node_modules/ package.json package-lock.json .git .gitignore .githooks dist/ updates.json --channel unlisted"
+    "publish:firefox": "node scripts/bump-version.js && web-ext sign --source-dir . --artifacts-dir dist --ignore-files test/ node_modules/ package.json package-lock.json .git .gitignore .githooks dist/ updates.json --channel unlisted"
   },
   "keywords": [],
   "author": "",
