@@ -44,11 +44,7 @@ npm test
 
 ### Pre-commit hook
 
-A pre-commit hook runs the test suite before each commit. It's configured automatically via `.githooks/`. To set it up after cloning:
-
-```bash
-git config core.hooksPath .githooks
-```
+A pre-commit hook runs the test suite before each commit. It's configured automatically when you run `npm install` (via the `prepare` script).
 
 ## Files
 
