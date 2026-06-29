@@ -69,11 +69,46 @@ function renderHeadersTable(headers) {
   return html;
 }
 
+function decodeCborBody(raw) {
+  if (!raw) return null;
+  try {
+    let buffer;
+    if (/^[A-Za-z0-9+/=\s]+$/.test(raw)) {
+      const clean = raw.replace(/\s/g, "");
+      const bin = atob(clean);
+      buffer = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) buffer[i] = bin.charCodeAt(i);
+    } else {
+      buffer = new TextEncoder().encode(raw);
+    }
+    const decoded = CBOR.decode(buffer.buffer || buffer);
+    return JSON.stringify(decoded, (key, val) => {
+      if (val instanceof ArrayBuffer) return `<binary ${val.byteLength} bytes>`;
+      return val;
+    }, 2);
+  } catch (e) {
+    return null;
+  }
+}
+
+function renderRequestBody(entry) {
+  const postData = entry.request && entry.request.postData;
+  if (!postData || !postData.text) return "";
+
+  const decoded = decodeCborBody(postData.text);
+  const content = decoded
+    ? `<pre>${syntaxHighlight(decoded)}</pre>`
+    : `<pre>${postData.text.slice(0, 1000)}</pre>`;
+
+  return `<details class="headers-section"><summary>Request Body</summary>${content}</details>`;
+}
+
 function renderHeaders(entry) {
   const reqHeaders = entry.request ? entry.request.headers : [];
   const resHeaders = entry.response ? entry.response.headers : [];
 
   return `<details class="headers-section"><summary>Request Headers (${reqHeaders.length})</summary>${renderHeadersTable(reqHeaders)}</details>` +
+         renderRequestBody(entry) +
          `<details class="headers-section"><summary>Response Headers (${resHeaders.length})</summary>${renderHeadersTable(resHeaders)}</details>`;
 }
 
@@ -91,29 +126,12 @@ function selectEntry(index) {
   const sCls = status >= 400 ? "err" : "ok";
 
   entry.getContent((body, encoding) => {
+    const decoded = decodeCborBody(body);
     let bodyHtml;
-    try {
-      let buffer;
-      if (encoding === "base64" || /^[A-Za-z0-9+/=\s]+$/.test(body)) {
-        const clean = body.replace(/\s/g, "");
-        const bin = atob(clean);
-        buffer = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) buffer[i] = bin.charCodeAt(i);
-      } else {
-        const enc = new TextEncoder();
-        buffer = enc.encode(body);
-      }
-
-      const decoded = CBOR.decode(buffer.buffer || buffer);
-      const json = JSON.stringify(decoded, (key, val) => {
-        if (val instanceof ArrayBuffer) {
-          return `<binary ${val.byteLength} bytes>`;
-        }
-        return val;
-      }, 2);
-      bodyHtml = `<pre>${syntaxHighlight(json)}</pre>`;
-    } catch (e) {
-      bodyHtml = `<pre>Decode error: ${e.message}\n\nRaw body (first 500 chars):\n${body.slice(0, 500)}</pre>`;
+    if (decoded) {
+      bodyHtml = `<pre>${syntaxHighlight(decoded)}</pre>`;
+    } else {
+      bodyHtml = `<pre>Decode error\n\nRaw body (first 500 chars):\n${(body || "").slice(0, 500)}</pre>`;
     }
 
     const headerHtml = `<div class="detail-header"><div class="path">${fullPath}</div><div class="status ${sCls}">${status} ${statusText}</div></div>`;
