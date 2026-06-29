@@ -96,16 +96,21 @@ function decodeCborBody(raw) {
   }
 }
 
+function copyButton(text) {
+  return `<button class="copy-btn" onclick="navigator.clipboard.writeText(this.dataset.text).then(() => { this.textContent = 'Copied!'; this.classList.add('copied'); setTimeout(() => { this.textContent = 'Copy'; this.classList.remove('copied'); }, 1500); })" data-text="${text.replace(/"/g, '&quot;').replace(/</g, '&lt;')}">Copy</button>`;
+}
+
 function renderRequestBody(entry) {
   const postData = entry.request && entry.request.postData;
   if (!postData || !postData.text) return "";
 
   const decoded = decodeCborBody(postData.text);
+  const raw = decoded || postData.text.slice(0, 1000);
   const content = decoded
     ? `<pre>${syntaxHighlight(decoded)}</pre>`
-    : `<pre>${postData.text.slice(0, 1000)}</pre>`;
+    : `<pre>${raw}</pre>`;
 
-  return `<details class="headers-section"><summary>Request Body</summary>${content}</details>`;
+  return `<details class="headers-section"><summary>Request Body</summary><div class="body-section">${copyButton(raw)}${content}</div></details>`;
 }
 
 function renderHeaders(entry) {
@@ -134,9 +139,10 @@ function selectEntry(index) {
     const decoded = decodeCborBody(body);
     let bodyHtml;
     if (decoded) {
-      bodyHtml = `<pre>${syntaxHighlight(decoded)}</pre>`;
+      bodyHtml = `<div class="body-section">${copyButton(decoded)}<pre>${syntaxHighlight(decoded)}</pre></div>`;
     } else {
-      bodyHtml = `<pre>Decode error\n\nRaw body (first 500 chars):\n${(body || "").slice(0, 500)}</pre>`;
+      const raw = `Decode error\n\nRaw body (first 500 chars):\n${(body || "").slice(0, 500)}`;
+      bodyHtml = `<div class="body-section">${copyButton(raw)}<pre>${raw}</pre></div>`;
     }
 
     const headerHtml = `<div class="detail-header"><div class="path">${fullPath}</div><div class="status ${sCls}">${status} ${statusText}</div></div>`;
