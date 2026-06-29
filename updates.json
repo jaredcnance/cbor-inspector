@@ -3,8 +3,8 @@
     "cbor-decoder@noreply": {
       "updates": [
         {
-          "version": "1.0.3",
-          "update_link": "https://code.amazon.com/packages/CBorDebugger/blobs/main/--/dist/d49e88be5e334d0faee3-1.0.3.xpi?raw=1"
+          "version": "1.0.5",
+          "update_link": "https://code.amazon.com/packages/CBorDebugger/blobs/main/--/dist/d49e88be5e334d0faee3-1.0.5.xpi?raw=1"
         }
       ]
     }
