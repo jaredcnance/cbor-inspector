@@ -5,12 +5,15 @@
   "main": "cbor.js",
   "scripts": {
     "test": "vitest run",
-    "prepare": "git config core.hooksPath .githooks"
+    "prepare": "git config core.hooksPath .githooks",
+    "build:firefox": "web-ext build --source-dir . --artifacts-dir dist --ignore-files test/ node_modules/ package.json package-lock.json .git .gitignore .githooks dist/",
+    "publish:firefox": "web-ext sign --source-dir . --artifacts-dir dist --ignore-files test/ node_modules/ package.json package-lock.json .git .gitignore .githooks dist/ --channel listed"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "web-ext": "^10.4.0"
   }
 }
