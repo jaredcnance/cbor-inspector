@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "cbor-decoder@noreply": {
+      "updates": [
+        {
+          "version": "1.0.0",
+          "update_link": "https://code.amazon.com/packages/CBorDebugger/blobs/main/--/dist/cbor_decoder-1.0.0.xpi?raw=1"
+        }
+      ]
+    }
+  }
+}

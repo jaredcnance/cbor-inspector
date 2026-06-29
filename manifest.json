@@ -12,7 +12,8 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "cbor-decoder@noreply",
-      "strict_min_version": "109.0"
+      "strict_min_version": "109.0",
+      "update_url": "https://code.amazon.com/packages/CBorDebugger/blobs/main/--/updates.json?raw=1"
     }
   }
 }
