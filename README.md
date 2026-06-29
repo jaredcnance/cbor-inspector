@@ -33,6 +33,23 @@ DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cbor`) res
 3. Make requests — any response with `content-type: application/cbor` is automatically captured
 4. Click an entry in the left pane to view decoded JSON and headers
 
+## Development
+
+### Running tests
+
+```bash
+npm install
+npm test
+```
+
+### Pre-commit hook
+
+A pre-commit hook runs the test suite before each commit. It's configured automatically via `.githooks/`. To set it up after cloning:
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## Files
 
 - `manifest.json` — Extension manifest
@@ -40,3 +57,4 @@ DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cbor`) res
 - `panel.html` / `panel.js` — Panel UI and logic
 - `cbor.js` — Minimal CBOR decoder supporting indefinite-length encoding
 - `icon.svg` — Panel tab icon
+- `test/cbor.test.js` — CBOR decoder test suite

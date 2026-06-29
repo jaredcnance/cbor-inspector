@@ -126,3 +126,5 @@ const CBOR = (() => {
 
   return { decode };
 })();
+
+if (typeof module !== "undefined") module.exports = CBOR;

@@ -1,0 +1,15 @@
+{
+  "name": "cbor-devtools-extension",
+  "version": "1.0.0",
+  "description": "DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cbor`) responses. Works in both Firefox and Chrome.",
+  "main": "cbor.js",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vitest": "^4.1.9"
+  }
+}
