@@ -158,10 +158,10 @@ function onRequestFinished(entry) {
   }
 }
 
-chrome.devtools.network.onRequestFinished.addListener(onRequestFinished);
+browser.devtools.network.onRequestFinished.addListener(onRequestFinished);
 
 // Also scan already-finished requests when panel opens
-chrome.devtools.network.getHAR((harLog) => {
+browser.devtools.network.getHAR((harLog) => {
   if (harLog && harLog.entries) {
     harLog.entries.forEach((e) => {
       if (isCborResponse(e)) {
