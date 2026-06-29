@@ -69,19 +69,24 @@ function renderHeadersTable(headers) {
   return html;
 }
 
+function stringToBytes(str) {
+  const buffer = new Uint8Array(str.length);
+  for (let i = 0; i < str.length; i++) buffer[i] = str.charCodeAt(i) & 0xff;
+  return buffer;
+}
+
 function decodeCborBody(raw) {
   if (!raw) return null;
   try {
     let buffer;
-    if (/^[A-Za-z0-9+/=\s]+$/.test(raw)) {
+    const looksBase64 = /^[A-Za-z0-9+/\s]+=*\s*$/.test(raw) && raw.length > 4;
+    if (looksBase64) {
       const clean = raw.replace(/\s/g, "");
-      const bin = atob(clean);
-      buffer = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) buffer[i] = bin.charCodeAt(i);
+      buffer = stringToBytes(atob(clean));
     } else {
-      buffer = new TextEncoder().encode(raw);
+      buffer = stringToBytes(raw);
     }
-    const decoded = CBOR.decode(buffer.buffer || buffer);
+    const decoded = CBOR.decode(buffer.buffer);
     return JSON.stringify(decoded, (key, val) => {
       if (val instanceof ArrayBuffer) return `<binary ${val.byteLength} bytes>`;
       return val;
