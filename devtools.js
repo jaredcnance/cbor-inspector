@@ -1,1 +1,1 @@
-browser.devtools.panels.create("CBOR", "icon.svg", "panel.html");
+chrome.devtools.panels.create("CBOR", "icon.svg", "panel.html");

@@ -1,10 +1,10 @@
 # CBOR Debugger
 
-Firefox DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cbor`) responses.
+DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cbor`) responses. Works in both Firefox and Chrome.
 
 ## Features
 
-- Adds a **CBOR** tab to Firefox DevTools
+- Adds a **CBOR** tab to DevTools
 - Auto-captures requests with CBOR content-type as they happen
 - Decodes and displays response bodies as syntax-highlighted JSON
 - Collapsible request/response headers view
@@ -13,9 +13,18 @@ Firefox DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cb
 
 ## Installation
 
-1. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
+### Firefox
+
+1. Navigate to `about:debugging#/runtime/this-firefox`
 2. Click **Load Temporary Add-on...**
 3. Select the `manifest.json` file from this directory
+
+### Chrome
+
+1. Navigate to `chrome://extensions`
+2. Enable **Developer mode** (toggle in top-right)
+3. Click **Load unpacked**
+4. Select this directory
 
 ## Usage
 
