@@ -195,7 +195,7 @@ function selectEntry(index) {
   const statusText = entry.response ? entry.response.statusText : "";
   const sCls = status >= 400 ? "err" : "ok";
 
-  entry.getContent((body, encoding) => {
+  function renderDetail(body) {
     detailEl.textContent = "";
 
     const header = document.createElement("div");
@@ -220,7 +220,14 @@ function selectEntry(index) {
       pre.textContent = `Decode error\n\nRaw body (first 500 chars):\n${(body || "").slice(0, 500)}`;
       detailEl.appendChild(pre);
     }
-  });
+  }
+
+  if (typeof entry.getContent === "function") {
+    entry.getContent((body) => renderDetail(body));
+  } else {
+    const body = entry.response && entry.response.content && entry.response.content.text;
+    renderDetail(body || "");
+  }
 }
 
 function onRequestFinished(entry) {
