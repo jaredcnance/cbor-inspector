@@ -28,18 +28,29 @@ function syntaxHighlight(json) {
   });
 }
 
+function getResourceName(pathname) {
+  const segments = pathname.split("/").filter(Boolean);
+  return segments.length > 0 ? segments[segments.length - 1] : pathname;
+}
+
+function statusClass(status) {
+  if (status >= 400) return "status-err";
+  if (status >= 200 && status < 400) return "status-ok";
+  return "";
+}
+
 function renderList() {
   listEl.innerHTML = "";
   entries.forEach((entry, i) => {
     const div = document.createElement("div");
-    div.className = "entry" + (i === selectedIndex ? " selected" : "");
+    const status = entry.response ? entry.response.status : 0;
+    div.className = "entry " + statusClass(status) + (i === selectedIndex ? " selected" : "");
 
     const method = entry.request.method;
     const url = new URL(entry.request.url);
-    const path = url.pathname + url.search;
-    const status = entry.response ? entry.response.status : "?";
+    const resource = getResourceName(url.pathname);
 
-    div.innerHTML = `<span class="method">${method}</span><span class="url">${path}</span><span class="status-code ${status >= 400 ? 'error' : ''}">${status}</span>`;
+    div.innerHTML = `<span class="method">${method}</span><span class="resource">${resource}</span>`;
     div.addEventListener("click", () => selectEntry(i));
     listEl.appendChild(div);
   });
@@ -73,6 +84,12 @@ function selectEntry(index) {
   const entry = entries[index];
   const detailEl = document.getElementById("detail");
 
+  const url = new URL(entry.request.url);
+  const fullPath = `${entry.request.method} ${url.pathname}${url.search}`;
+  const status = entry.response ? entry.response.status : 0;
+  const statusText = entry.response ? entry.response.statusText : "";
+  const sCls = status >= 400 ? "err" : "ok";
+
   entry.getContent((body, encoding) => {
     let bodyHtml;
     try {
@@ -99,7 +116,8 @@ function selectEntry(index) {
       bodyHtml = `<pre>Decode error: ${e.message}\n\nRaw body (first 500 chars):\n${body.slice(0, 500)}</pre>`;
     }
 
-    detailEl.innerHTML = renderHeaders(entry) + bodyHtml;
+    const headerHtml = `<div class="detail-header"><div class="path">${fullPath}</div><div class="status ${sCls}">${status} ${statusText}</div></div>`;
+    detailEl.innerHTML = headerHtml + renderHeaders(entry) + bodyHtml;
   });
 }
 

@@ -11,15 +11,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monos
 #toolbar .status { color: #888; font-size: 11px; margin-left: auto; }
 #container { display: flex; flex: 1; overflow: hidden; }
 #request-list { width: 320px; min-width: 200px; overflow-y: auto; border-right: 1px solid #3e3e3e; }
-#request-list .entry { padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #2a2a2a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#request-list .entry { padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #2a2a2a; border-left: 3px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#request-list .entry.status-ok { border-left-color: #6a9955; }
+#request-list .entry.status-err { border-left-color: #f44747; }
 #request-list .entry:hover { background: #2a2d3e; }
 #request-list .entry.selected { background: #264f78; }
 #request-list .entry .method { color: #569cd6; font-weight: bold; margin-right: 6px; }
-#request-list .entry .url { color: #9cdcfe; }
-#request-list .entry .status-code { margin-left: 6px; color: #6a9955; }
-#request-list .entry .status-code.error { color: #f44747; }
+#request-list .entry .resource { color: #9cdcfe; }
 #detail { flex: 1; overflow: auto; padding: 12px; }
 #detail pre { white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
+.detail-header { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #3e3e3e; }
+.detail-header .path { color: #d4d4d4; font-size: 13px; font-weight: bold; word-break: break-all; }
+.detail-header .status { margin-top: 4px; font-size: 12px; }
+.detail-header .status.ok { color: #6a9955; }
+.detail-header .status.err { color: #f44747; }
 .json-key { color: #9cdcfe; }
 .json-string { color: #ce9178; }
 .json-number { color: #b5cea8; }
