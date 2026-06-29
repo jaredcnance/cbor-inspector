@@ -7,7 +7,7 @@
   "permissions": [],
   "browser_specific_settings": {
     "gecko": {
-      "id": "cbor-decoder@amazon.com",
+      "id": "cbor-decoder@noreply",
       "strict_min_version": "109.0"
     }
   }
