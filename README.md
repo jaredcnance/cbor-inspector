@@ -1,4 +1,4 @@
-# CBOR Debugger
+# CBOR Inspector
 
 DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cbor`) responses. Works in both Firefox and Chrome.
 
@@ -7,7 +7,8 @@ DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cbor`) res
 - Adds a **CBOR** tab to DevTools
 - Auto-captures requests with CBOR content-type as they happen
 - Decodes and displays response bodies as syntax-highlighted JSON
-- Collapsible request/response headers view
+- Collapsible request/response headers and request body
+- Copy-to-clipboard buttons on decoded JSON
 - Handles indefinite-length maps/arrays (Smithy RPC v2 style)
 - Zero dependencies — self-contained CBOR decoder
 
@@ -15,16 +16,11 @@ DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cbor`) res
 
 ### Firefox
 
-1. Navigate to `about:debugging#/runtime/this-firefox`
-2. Click **Load Temporary Add-on...**
-3. Select the `manifest.json` file from this directory
+Install the latest signed extension from [GitHub Releases](https://github.com/jaredcnance/cbor-inspector/releases/latest). Download the `.xpi` file and Firefox will prompt you to install it. Updates are delivered automatically.
 
 ### Chrome
 
-1. Navigate to `chrome://extensions`
-2. Enable **Developer mode** (toggle in top-right)
-3. Click **Load unpacked**
-4. Select this directory
+Chrome installation currently requires loading the extension manually in developer mode (see Development section below).
 
 ## Usage
 
@@ -34,6 +30,21 @@ DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cbor`) res
 4. Click an entry in the left pane to view decoded JSON and headers
 
 ## Development
+
+### Local installation
+
+#### Firefox
+
+1. Navigate to `about:debugging#/runtime/this-firefox`
+2. Click **Load Temporary Add-on...**
+3. Select the `manifest.json` file from this directory
+
+#### Chrome
+
+1. Navigate to `chrome://extensions`
+2. Enable **Developer mode** (toggle in top-right)
+3. Click **Load unpacked**
+4. Select this directory
 
 ### Running tests
 
@@ -46,11 +57,14 @@ npm test
 
 A pre-commit hook runs the test suite before each commit. It's configured automatically when you run `npm install` (via the `prepare` script).
 
-## Files
+### Publishing
 
-- `manifest.json` — Extension manifest
-- `devtools.js` — Registers the DevTools panel
-- `panel.html` / `panel.js` — Panel UI and logic
-- `cbor.js` — Minimal CBOR decoder supporting indefinite-length encoding
-- `icon.svg` — Panel tab icon
-- `test/cbor.test.js` — CBOR decoder test suite
+```bash
+npm run publish:firefox
+```
+
+This bumps the patch version, signs with Mozilla, updates `updates.json`, commits, pushes to both remotes, and creates a GitHub Release.
+
+## License
+
+MIT
