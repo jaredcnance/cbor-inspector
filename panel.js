@@ -96,8 +96,29 @@ function decodeCborBody(raw) {
   }
 }
 
-function copyButton(text) {
-  return `<button class="copy-btn" onclick="navigator.clipboard.writeText(this.dataset.text).then(() => { this.textContent = 'Copied!'; this.classList.add('copied'); setTimeout(() => { this.textContent = 'Copy'; this.classList.remove('copied'); }, 1500); })" data-text="${text.replace(/"/g, '&quot;').replace(/</g, '&lt;')}">Copy</button>`;
+function copyButton(id) {
+  return `<button class="copy-btn" data-copy-id="${id}">Copy</button>`;
+}
+
+const copyTexts = {};
+
+function attachCopyListeners() {
+  document.querySelectorAll("[data-copy-id]").forEach((btn) => {
+    if (btn._bound) return;
+    btn._bound = true;
+    btn.addEventListener("click", () => {
+      const text = copyTexts[btn.dataset.copyId];
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = "Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "Copy";
+          btn.classList.remove("copied");
+        }, 1500);
+      });
+    });
+  });
 }
 
 function renderRequestBody(entry) {
@@ -110,7 +131,8 @@ function renderRequestBody(entry) {
     ? `<pre>${syntaxHighlight(decoded)}</pre>`
     : `<pre>${raw}</pre>`;
 
-  return `<details class="headers-section"><summary>Request Body</summary><div class="body-section">${copyButton(raw)}${content}</div></details>`;
+  copyTexts["req-body"] = raw;
+  return `<details class="headers-section"><summary>Request Body</summary><div class="body-section">${copyButton("req-body")}${content}</div></details>`;
 }
 
 function renderHeaders(entry) {
@@ -139,14 +161,17 @@ function selectEntry(index) {
     const decoded = decodeCborBody(body);
     let bodyHtml;
     if (decoded) {
-      bodyHtml = `<div class="body-section">${copyButton(decoded)}<pre>${syntaxHighlight(decoded)}</pre></div>`;
+      copyTexts["res-body"] = decoded;
+      bodyHtml = `<div class="body-section">${copyButton("res-body")}<pre>${syntaxHighlight(decoded)}</pre></div>`;
     } else {
       const raw = `Decode error\n\nRaw body (first 500 chars):\n${(body || "").slice(0, 500)}`;
-      bodyHtml = `<div class="body-section">${copyButton(raw)}<pre>${raw}</pre></div>`;
+      copyTexts["res-body"] = raw;
+      bodyHtml = `<div class="body-section">${copyButton("res-body")}<pre>${raw}</pre></div>`;
     }
 
     const headerHtml = `<div class="detail-header"><div class="path">${fullPath}</div><div class="status ${sCls}">${status} ${statusText}</div></div>`;
     detailEl.innerHTML = headerHtml + renderHeaders(entry) + bodyHtml;
+    attachCopyListeners();
   }
 
   if (typeof entry.getContent === "function") {
