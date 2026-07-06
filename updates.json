@@ -3,8 +3,8 @@
     "cbor-decoder@noreply": {
       "updates": [
         {
-          "version": "1.0.8",
-          "update_link": "https://github.com/jaredcnance/cbor-inspector/releases/download/v1.0.8/cbor_decoder-1.0.8.xpi"
+          "version": "1.0.9",
+          "update_link": "https://github.com/jaredcnance/cbor-inspector/releases/download/v1.0.9/cbor_decoder-1.0.9.xpi"
         }
       ]
     }
