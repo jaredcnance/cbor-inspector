@@ -17,7 +17,9 @@ if (!xpi) {
   process.exit(1);
 }
 
-const updateLink = `https://github.com/jaredcnance/cbor-inspector/releases/download/v${version}/cbor_decoder-${version}.xpi`;
+const xpiPath = path.join(distDir, xpi);
+const releaseAsset = `cbor_decoder-${version}.xpi`;
+const updateLink = `https://github.com/jaredcnance/cbor-inspector/releases/download/v${version}/${releaseAsset}`;
 
 const updates = {
   addons: {
@@ -28,9 +30,12 @@ const updates = {
 };
 
 fs.writeFileSync(updatesPath, JSON.stringify(updates, null, 2) + "\n");
-console.log(`Updated updates.json → v${version} (${xpi})`);
+console.log(`Updated updates.json → v${version}`);
 
-execSync(`git add dist/${xpi} updates.json manifest.json`, { stdio: "inherit" });
-execSync(`git commit -m "Publish v${version}"`, { stdio: "inherit" });
-execSync(`git push`, { stdio: "inherit" });
-console.log(`Pushed v${version} to remote`);
+const run = (cmd) => execSync(cmd, { stdio: "inherit", cwd: path.join(__dirname, "..") });
+
+run(`git add updates.json manifest.json`);
+run(`git commit -m "Publish v${version}"`);
+run(`git push`);
+run(`gh release create v${version} "${xpiPath}#${releaseAsset}" --title "v${version}" --notes "CBOR Decoder v${version}"`);
+console.log(`Released v${version} on GitHub`);
