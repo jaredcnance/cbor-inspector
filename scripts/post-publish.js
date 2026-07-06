@@ -36,6 +36,7 @@ const run = (cmd) => execSync(cmd, { stdio: "inherit", cwd: path.join(__dirname,
 
 run(`git add updates.json manifest.json`);
 run(`git commit -m "Publish v${version}"`);
-run(`git push`);
-run(`gh release create v${version} "${xpiPath}#${releaseAsset}" --title "v${version}" --notes "CBOR Decoder v${version}"`);
+run(`git push origin main`);
+run(`git push github main`);
+run(`gh release create v${version} "${xpiPath}#${releaseAsset}" --repo jaredcnance/cbor-inspector --title "v${version}" --notes "CBOR Decoder v${version}"`);
 console.log(`Released v${version} on GitHub`);
