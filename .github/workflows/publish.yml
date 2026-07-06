@@ -30,8 +30,8 @@ jobs:
         run: |
           VERSION=$(node -p "require('./manifest.json').version")
           XPI=$(ls dist/*.xpi | head -1)
-          ASSET="cbor_decoder-${VERSION}.xpi"
-          UPDATE_LINK="https://github.com/jaredcnance/cbor-inspector/releases/download/v${VERSION}/${ASSET}"
+          XPI_NAME=$(basename "$XPI")
+          UPDATE_LINK="https://github.com/jaredcnance/cbor-inspector/releases/download/v${VERSION}/${XPI_NAME}"
 
           cat > updates.json << EOF
           {
@@ -54,6 +54,6 @@ jobs:
           git commit -m "Publish v${VERSION}"
           git push
 
-          gh release create "v${VERSION}" "${XPI}#${ASSET}" --title "v${VERSION}" --notes "CBOR Decoder v${VERSION}"
+          gh release create "v${VERSION}" "${XPI}" --title "v${VERSION}" --notes "CBOR Decoder v${VERSION}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

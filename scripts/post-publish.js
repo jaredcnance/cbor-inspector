@@ -18,8 +18,7 @@ if (!xpi) {
 }
 
 const xpiPath = path.join(distDir, xpi);
-const releaseAsset = `cbor_decoder-${version}.xpi`;
-const updateLink = `https://github.com/jaredcnance/cbor-inspector/releases/download/v${version}/${releaseAsset}`;
+const updateLink = `https://github.com/jaredcnance/cbor-inspector/releases/download/v${version}/${xpi}`;
 
 const updates = {
   addons: {
@@ -38,5 +37,5 @@ run(`git add updates.json manifest.json`);
 run(`git commit -m "Publish v${version}"`);
 run(`git push origin main`);
 run(`git push github main`);
-run(`gh release create v${version} "${xpiPath}#${releaseAsset}" --repo jaredcnance/cbor-inspector --title "v${version}" --notes "CBOR Decoder v${version}"`);
+run(`gh release create v${version} "${xpiPath}" --repo jaredcnance/cbor-inspector --title "v${version}" --notes "CBOR Decoder v${version}"`);
 console.log(`Released v${version} on GitHub`);
