@@ -86,29 +86,28 @@ describe("CBOR.decode", () => {
   });
 
   it("decodes a Smithy RPC v2 style response", () => {
-    // Base64 from the original test case (agent-list response)
-    const b64 = "v2dyZXN1bHRzv2phZ2VudC1saXN0v2dxdWVyeUlkeCQ2NGUzZTRlOS1jMjE5LTQ2M2EtODk3Yy1lNjQ0MTU1NDhhMGNkcm93c5+/amFnZW50X25hbWVrYXJndXMtYWdlbnT/v2phZ2VudF9uYW1ld2FyZ3VzLXF1aWNrLXF1ZXJ5LWFnZW50/79qYWdlbnRfbmFtZXgYY2xvdWR3YXRjaC1ob3Jpem9uLWFnZW50/79qYWdlbnRfbmFtZXgdZGVsZWdhdGlvbi1jb25maXJtYXRpb24tYWdlbnT/v2phZ2VudF9uYW1leBhqb3VybmFsLXN1bW1hcml6ZXItYWdlbnT/v2phZ2VudF9uYW1lb3F1ZXJ5LWdlbi1hZ2VudP//////";
+    const b64 = "v2dyZXN1bHRzv2lpdGVtLWxpc3S/Z3F1ZXJ5SWR4JGFiYzEyMzQ1LWRlZjYtNzg5MC1hYmNkLWVmMTIzNDU2Nzg5MGRyb3dzn79paXRlbV9uYW1lbWFscGhhLXNlcnZpY2X/v2lpdGVtX25hbWVuYmV0YS1wcm9jZXNzb3L/v2lpdGVtX25hbWVsZ2FtbWEtd29ya2Vy//////8=";
     const bin = atob(b64);
     const buffer = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) buffer[i] = bin.charCodeAt(i);
 
     const result = CBOR.decode(buffer.buffer);
-    expect(result.results["agent-list"].queryId).toBe("64e3e4e9-c219-463a-897c-e64415548a0c");
-    expect(result.results["agent-list"].rows).toHaveLength(6);
-    expect(result.results["agent-list"].rows[0].agent_name).toBe("argus-agent");
-    expect(result.results["agent-list"].rows[5].agent_name).toBe("query-gen-agent");
+    expect(result.results["item-list"].queryId).toBe("abc12345-def6-7890-abcd-ef1234567890");
+    expect(result.results["item-list"].rows).toHaveLength(3);
+    expect(result.results["item-list"].rows[0].item_name).toBe("alpha-service");
+    expect(result.results["item-list"].rows[2].item_name).toBe("gamma-worker");
   });
 
   it("decodes a stats response", () => {
-    const b64 = "v2dyZXN1bHRzv2VzdGF0c79kcm93c5+/ZnA1MF9uc3IxMTQzMDQxMzk4OC42NjM0MzFmcDk5X25zcTkyODkyNzE3NzA2LjIwNjc5bHRvdGFsX3RyYWNlc2UxMjY5OGZwOTBfbnNxNTEzNzcxODM4NjMuNTA5NzNmYXZnX25zcjE4NzMxMDk3MzE1LjIxMDU4M2xlcnJvcl90cmFjZXNmNzA3NC4wbHRvdGFsX3Rva2Vuc2gyMzQzNjQxN///////"
+    const b64 = "v2dyZXN1bHRzv2VzdGF0c79kcm93c5+/ZnA1MF9tc2UxNDIuNWZwOTlfbXNlODkyLjNudG90YWxfcmVxdWVzdHNlNTA0MzJrZXJyb3JfY291bnRlMTI3LjD//////w==";
     const bin = atob(b64);
     const buffer = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) buffer[i] = bin.charCodeAt(i);
 
     const result = CBOR.decode(buffer.buffer);
     const row = result.results.stats.rows[0];
-    expect(row.total_traces).toBe("12698");
-    expect(row.error_traces).toBe("7074.0");
-    expect(row.total_tokens).toBe("23436417");
+    expect(row.total_requests).toBe("50432");
+    expect(row.error_count).toBe("127.0");
+    expect(row.p50_ms).toBe("142.5");
   });
 });

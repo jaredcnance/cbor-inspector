@@ -17,7 +17,7 @@ if (!xpi) {
   process.exit(1);
 }
 
-const updateLink = `https://code.amazon.com/packages/CBorDebugger/blobs/main/--/dist/${xpi}?raw=1`;
+const updateLink = `https://github.com/jaredcnance/cbor-inspector/releases/download/v${version}/cbor_decoder-${version}.xpi`;
 
 const updates = {
   addons: {
