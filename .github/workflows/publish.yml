@@ -1,0 +1,59 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+      - name: Bump version
+        run: node scripts/bump-version.js
+
+      - name: Sign extension
+        run: npx web-ext sign --source-dir . --artifacts-dir dist --ignore-files "test/" "node_modules/" "package.json" "package-lock.json" ".git" ".gitignore" ".githooks" "dist/" "updates.json" "scripts/" ".env" ".github/" --channel unlisted
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+
+      - name: Update updates.json and create release
+        run: |
+          VERSION=$(node -p "require('./manifest.json').version")
+          XPI=$(ls dist/*.xpi | head -1)
+          ASSET="cbor_decoder-${VERSION}.xpi"
+          UPDATE_LINK="https://github.com/jaredcnance/cbor-inspector/releases/download/v${VERSION}/${ASSET}"
+
+          cat > updates.json << EOF
+          {
+            "addons": {
+              "cbor-decoder@noreply": {
+                "updates": [
+                  {
+                    "version": "${VERSION}",
+                    "update_link": "${UPDATE_LINK}"
+                  }
+                ]
+              }
+            }
+          }
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add updates.json manifest.json
+          git commit -m "Publish v${VERSION}"
+          git push
+
+          gh release create "v${VERSION}" "${XPI}#${ASSET}" --title "v${VERSION}" --notes "CBOR Decoder v${VERSION}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
