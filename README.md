@@ -50,8 +50,17 @@ Chrome installation currently requires loading the extension manually in develop
 
 ```bash
 npm install
-npm test
+npm test          # unit tests (vitest)
+npm run test:e2e  # E2E panel tests (Playwright, headless)
 ```
+
+To run the full E2E suite including the smoke test (requires headed Chromium):
+
+```bash
+npm run test:e2e:all
+```
+
+E2E tests generate UI snapshots in `snapshots/` for visual review. In CI, these are uploaded as build artifacts.
 
 ### Pre-commit hook
 

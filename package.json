@@ -5,6 +5,9 @@
   "main": "cbor.js",
   "scripts": {
     "test": "vitest run",
+    "test:e2e": "npx playwright test --project=panel",
+    "test:e2e:smoke": "npx playwright test --project=smoke",
+    "test:e2e:all": "npx playwright test",
     "prepare": "git config core.hooksPath .githooks",
     "build:firefox": "web-ext build --source-dir . --artifacts-dir dist --ignore-files test/ node_modules/ package.json package-lock.json .git .gitignore .githooks dist/",
     "publish:firefox": "node scripts/publish.js"
@@ -13,6 +16,8 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "express": "^5.2.1",
     "vitest": "^4.1.9",
     "web-ext": "^10.4.0"
   }

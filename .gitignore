@@ -2,3 +2,5 @@ node_modules/
 dist/
 .env
 .amo-upload-uuid
+snapshots/
+e2e/test-results/
