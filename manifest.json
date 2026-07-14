@@ -4,7 +4,12 @@
   "version": "1.0.10",
   "description": "DevTools panel that auto-decodes Smithy RPC v2 CBOR responses with syntax-highlighted JSON output",
   "devtools_page": "devtools.html",
-  "permissions": [],
+  "permissions": ["webRequest"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
+  },
   "icons": {
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
@@ -12,7 +17,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "cbor-decoder@noreply",
-      "strict_min_version": "109.0",
+      "strict_min_version": "121.0",
       "update_url": "https://raw.githubusercontent.com/jaredcnance/cbor-inspector/main/updates.json"
     }
   }

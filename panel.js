@@ -6,6 +6,8 @@ const outputEl = document.getElementById("output");
 const statusEl = document.getElementById("status");
 const clearBtn = document.getElementById("clear-btn");
 
+const pendingRequests = new Map();
+
 function isCborResponse(entry) {
   if (!entry.response || !entry.response.headers) return false;
   return entry.response.headers.some(
@@ -44,17 +46,30 @@ function renderList() {
   entries.forEach((entry, i) => {
     const div = document.createElement("div");
     const status = entry.response ? entry.response.status : 0;
-    div.className = "entry " + statusClass(status) + (i === selectedIndex ? " selected" : "");
+    const loading = entry._loading;
+    const cls = loading ? "status-loading" : statusClass(status);
+    div.className = "entry " + cls + (i === selectedIndex ? " selected" : "");
 
     const method = entry.request.method;
     const url = new URL(entry.request.url);
     const resource = getResourceName(url.pathname);
 
-    div.innerHTML = `<span class="method">${method}</span><span class="resource">${resource}</span>`;
+    let inner = `<span class="method">${method}</span><span class="resource">${resource}</span>`;
+    if (loading) {
+      inner += `<span class="loading-indicator"></span>`;
+    }
+    div.innerHTML = inner;
     div.addEventListener("click", () => selectEntry(i));
     listEl.appendChild(div);
   });
-  statusEl.textContent = `${entries.length} CBOR response${entries.length !== 1 ? "s" : ""} captured`;
+
+  const loadingCount = entries.filter(e => e._loading).length;
+  const doneCount = entries.length - loadingCount;
+  let statusText = `${doneCount} CBOR response${doneCount !== 1 ? "s" : ""} captured`;
+  if (loadingCount > 0) {
+    statusText += ` · ${loadingCount} pending`;
+  }
+  statusEl.textContent = statusText;
 }
 
 function renderHeadersTable(headers) {
@@ -139,9 +154,24 @@ function renderHeaders(entry) {
   const reqHeaders = entry.request ? entry.request.headers : [];
   const resHeaders = entry.response ? entry.response.headers : [];
 
-  return `<details class="headers-section"><summary>Request Headers (${reqHeaders.length})</summary>${renderHeadersTable(reqHeaders)}</details>` +
-         renderRequestBody(entry) +
-         `<details class="headers-section"><summary>Response Headers (${resHeaders.length})</summary>${renderHeadersTable(resHeaders)}</details>`;
+  let html = `<details class="headers-section"><summary>Request Headers (${reqHeaders.length})</summary>${renderHeadersTable(reqHeaders)}</details>`;
+  html += renderRequestBody(entry);
+  if (resHeaders.length > 0) {
+    html += `<details class="headers-section"><summary>Response Headers (${resHeaders.length})</summary>${renderHeadersTable(resHeaders)}</details>`;
+  }
+  return html;
+}
+
+function renderLoadingDetail(entry) {
+  const detailEl = document.getElementById("detail");
+  const url = new URL(entry.request.url);
+  const fullPath = `${entry.request.method} ${url.pathname}${url.search}`;
+
+  let html = `<div class="detail-header"><div class="path">${fullPath}</div><div class="status loading">Pending…</div></div>`;
+  html += renderHeaders(entry);
+  html += `<div class="loading-body"><div class="loading-spinner"></div><span>Waiting for response…</span></div>`;
+  detailEl.innerHTML = html;
+  attachCopyListeners();
 }
 
 function selectEntry(index) {
@@ -149,6 +179,12 @@ function selectEntry(index) {
   renderList();
 
   const entry = entries[index];
+
+  if (entry._loading) {
+    renderLoadingDetail(entry);
+    return;
+  }
+
   const detailEl = document.getElementById("detail");
 
   const url = new URL(entry.request.url);
@@ -182,16 +218,76 @@ function selectEntry(index) {
   }
 }
 
-function onRequestFinished(entry) {
-  if (isCborResponse(entry)) {
-    entries.push(entry);
+function onRequestStarted(msg) {
+  const entry = {
+    _loading: true,
+    _requestId: msg.requestId,
+    request: {
+      method: msg.method,
+      url: msg.url,
+      headers: msg.requestHeaders || []
+    },
+    response: null
+  };
+  entries.push(entry);
+  pendingRequests.set(msg.requestId, entry);
+  renderList();
+  if (selectedIndex === entries.length - 1) {
+    renderLoadingDetail(entry);
+  }
+}
+
+function onResponseHeaders(msg) {
+  const entry = pendingRequests.get(msg.requestId);
+  if (!entry) return;
+  entry.response = {
+    status: msg.statusCode,
+    statusText: "",
+    headers: msg.responseHeaders || []
+  };
+  if (selectedIndex === entries.indexOf(entry)) {
+    renderLoadingDetail(entry);
+  }
+}
+
+function onRequestFinished(harEntry) {
+  if (!isCborResponse(harEntry)) return;
+
+  const url = harEntry.request.url;
+  const method = harEntry.request.method;
+
+  let matched = null;
+  for (const [id, pending] of pendingRequests) {
+    if (pending.request.url === url && pending.request.method === method) {
+      matched = id;
+      break;
+    }
+  }
+
+  if (matched) {
+    const entry = pendingRequests.get(matched);
+    pendingRequests.delete(matched);
+    const idx = entries.indexOf(entry);
+
+    entry._loading = false;
+    entry.request = harEntry.request;
+    entry.response = harEntry.response;
+    if (typeof harEntry.getContent === "function") {
+      entry.getContent = harEntry.getContent.bind(harEntry);
+    }
+
+    renderList();
+    if (selectedIndex === idx) {
+      selectEntry(idx);
+    }
+  } else {
+    entries.push(harEntry);
     renderList();
   }
 }
 
 chrome.devtools.network.onRequestFinished.addListener(onRequestFinished);
 
-// Also scan already-finished requests when panel opens
 chrome.devtools.network.getHAR((harLog) => {
   if (harLog && harLog.entries) {
     harLog.entries.forEach((e) => {
@@ -203,8 +299,18 @@ chrome.devtools.network.getHAR((harLog) => {
   }
 });
 
+const port = chrome.runtime.connect({ name: "cbor-panel" });
+port.onMessage.addListener((msg) => {
+  if (msg.type === "request-started") {
+    onRequestStarted(msg);
+  } else if (msg.type === "response-headers") {
+    onResponseHeaders(msg);
+  }
+});
+
 clearBtn.addEventListener("click", () => {
   entries.length = 0;
+  pendingRequests.clear();
   selectedIndex = -1;
   renderList();
   outputEl.textContent = "Select a request to view decoded CBOR";
