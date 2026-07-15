@@ -12,38 +12,8 @@ let filterText = "";
 
 const pendingRequests = new Map();
 
-function isCborResponse(entry) {
-  if (!entry.response || !entry.response.headers) return false;
-  return entry.response.headers.some(
-    h => h.name.toLowerCase() === "content-type" &&
-         (h.value.includes("cbor") || h.value.includes("application/vnd.amazon"))
-  );
-}
-
-function syntaxHighlight(json) {
-  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
-    let cls = "json-number";
-    if (/^"/.test(match)) {
-      cls = /:$/.test(match) ? "json-key" : "json-string";
-    } else if (/true|false/.test(match)) {
-      cls = "json-bool";
-    } else if (/null/.test(match)) {
-      cls = "json-null";
-    }
-    return `<span class="${cls}">${match}</span>`;
-  });
-}
-
-function getResourceName(pathname) {
-  const segments = pathname.split("/").filter(Boolean);
-  return segments.length > 0 ? segments[segments.length - 1] : pathname;
-}
-
-function statusClass(status) {
-  if (status >= 400) return "status-err";
-  if (status >= 200 && status < 400) return "status-ok";
-  return "";
-}
+// Pure detection/formatting helpers live in format.js (loaded before this file).
+const { escapeHtml, isCborResponse, syntaxHighlight, getResourceName, statusClass, decodeCborBody, parseCookies } = Format;
 
 function matchesFilter(entry) {
   if (!filterText) return true;
@@ -67,7 +37,7 @@ function renderList() {
     const url = new URL(entry.request.url);
     const resource = getResourceName(url.pathname);
 
-    let inner = `<span class="method">${method}</span><span class="resource">${resource}</span>`;
+    let inner = `<span class="method">${escapeHtml(method)}</span><span class="resource">${escapeHtml(resource)}</span>`;
     if (loading) {
       inner += `<span class="loading-indicator"></span>`;
     }
@@ -85,43 +55,15 @@ function renderList() {
   statusEl.textContent = statusText;
 }
 
-function renderHeadersTable(headers) {
-  if (!headers || headers.length === 0) return "<em>No headers</em>";
+// Render a Name/Value table from {name, value} rows (headers, cookies, …).
+function renderNameValueTable(rows) {
+  if (!rows || rows.length === 0) return "<em>No headers</em>";
   let html = '<table class="headers-table"><tr><th>Name</th><th>Value</th></tr>';
-  for (const h of headers) {
-    const name = h.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const value = h.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    html += `<tr><td class="header-name">${name}</td><td class="header-value">${value}</td></tr>`;
+  for (const r of rows) {
+    html += `<tr><td class="header-name">${escapeHtml(r.name)}</td><td class="header-value">${escapeHtml(r.value)}</td></tr>`;
   }
   html += "</table>";
   return html;
-}
-
-function stringToBytes(str) {
-  const buffer = new Uint8Array(str.length);
-  for (let i = 0; i < str.length; i++) buffer[i] = str.charCodeAt(i) & 0xff;
-  return buffer;
-}
-
-function decodeCborBody(raw) {
-  if (!raw) return null;
-  try {
-    let buffer;
-    const looksBase64 = /^[A-Za-z0-9+/\s]+=*\s*$/.test(raw) && raw.length > 4;
-    if (looksBase64) {
-      const clean = raw.replace(/\s/g, "");
-      buffer = stringToBytes(atob(clean));
-    } else {
-      buffer = stringToBytes(raw);
-    }
-    const decoded = CBOR.decode(buffer.buffer);
-    return JSON.stringify(decoded, (key, val) => {
-      if (val instanceof ArrayBuffer) return `<binary ${val.byteLength} bytes>`;
-      return val;
-    }, 2);
-  } catch (e) {
-    return null;
-  }
 }
 
 function copyButton(id) {
@@ -157,26 +99,22 @@ function renderRequestBody(entry) {
   const raw = decoded || postData.text.slice(0, 1000);
   const content = decoded
     ? `<pre>${syntaxHighlight(decoded)}</pre>`
-    : `<pre>${raw}</pre>`;
+    : `<pre>${escapeHtml(raw)}</pre>`;
 
-  copyTexts["req-body"] = raw;
-  return `<details class="headers-section"><summary>Request Body</summary><div class="body-section">${copyButton("req-body")}${content}</div></details>`;
+  return renderSection({
+    title: "Request Body",
+    copyId: "req-body",
+    copyText: raw,
+    body: content,
+  });
 }
 
-function parseCookies(headers) {
-  if (!headers) return [];
-  const cookies = [];
-  for (const h of headers) {
-    if (h.name.toLowerCase() === "cookie") {
-      for (const pair of h.value.split(";")) {
-        const eq = pair.indexOf("=");
-        if (eq > 0) {
-          cookies.push({ name: pair.slice(0, eq).trim(), value: pair.slice(eq + 1).trim() });
-        }
-      }
-    }
-  }
-  return cookies;
+// Render a collapsible <details> section with a copy button and body markup.
+// `copyText` is registered under `copyId` for the copy handler.
+function renderSection({ title, count, copyId, copyText, body }) {
+  copyTexts[copyId] = copyText;
+  const label = count != null ? `${title} (${count})` : title;
+  return `<details class="headers-section"><summary>${label}</summary><div class="body-section">${copyButton(copyId)}${body}</div></details>`;
 }
 
 function renderCookies(entry) {
@@ -184,45 +122,51 @@ function renderCookies(entry) {
   const cookies = parseCookies(reqHeaders);
   if (cookies.length === 0) return "";
 
-  const cookieText = cookies.map(c => `${c.name}=${c.value}`).join("\n");
-  copyTexts["req-cookies"] = cookieText;
-
-  let html = `<details class="headers-section"><summary>Cookies (${cookies.length})</summary>`;
-  html += `<div class="body-section">${copyButton("req-cookies")}`;
-  html += '<table class="headers-table"><tr><th>Name</th><th>Value</th></tr>';
-  for (const c of cookies) {
-    const name = c.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const value = c.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    html += `<tr><td class="header-name">${name}</td><td class="header-value">${value}</td></tr>`;
-  }
-  html += "</table></div></details>";
-  return html;
+  return renderSection({
+    title: "Cookies",
+    count: cookies.length,
+    copyId: "req-cookies",
+    copyText: cookies.map(c => `${c.name}=${c.value}`).join("\n"),
+    body: renderNameValueTable(cookies),
+  });
 }
 
 function renderHeaders(entry) {
   const reqHeaders = entry.request ? entry.request.headers : [];
   const resHeaders = entry.response ? entry.response.headers : [];
 
-  const reqHeadersText = reqHeaders.map(h => `${h.name}: ${h.value}`).join("\n");
-  copyTexts["req-headers"] = reqHeadersText;
-
-  let html = `<details class="headers-section"><summary>Request Headers (${reqHeaders.length})</summary><div class="body-section">${copyButton("req-headers")}${renderHeadersTable(reqHeaders)}</div></details>`;
+  let html = renderSection({
+    title: "Request Headers",
+    count: reqHeaders.length,
+    copyId: "req-headers",
+    copyText: reqHeaders.map(h => `${h.name}: ${h.value}`).join("\n"),
+    body: renderNameValueTable(reqHeaders),
+  });
   html += renderRequestBody(entry);
   html += renderCookies(entry);
   if (resHeaders.length > 0) {
-    const resHeadersText = resHeaders.map(h => `${h.name}: ${h.value}`).join("\n");
-    copyTexts["res-headers"] = resHeadersText;
-    html += `<details class="headers-section"><summary>Response Headers (${resHeaders.length})</summary><div class="body-section">${copyButton("res-headers")}${renderHeadersTable(resHeaders)}</div></details>`;
+    html += renderSection({
+      title: "Response Headers",
+      count: resHeaders.length,
+      copyId: "res-headers",
+      copyText: resHeaders.map(h => `${h.name}: ${h.value}`).join("\n"),
+      body: renderNameValueTable(resHeaders),
+    });
   }
   return html;
 }
 
-function renderLoadingDetail(entry) {
-  const detailEl = document.getElementById("detail");
+// Build the top ".detail-header" block (path + status line) for a detail view.
+function renderDetailHeader(entry, statusHtml) {
   const url = new URL(entry.request.url);
   const fullPath = `${entry.request.method} ${url.pathname}${url.search}`;
+  return `<div class="detail-header"><div class="path">${escapeHtml(fullPath)}</div>${statusHtml}</div>`;
+}
 
-  let html = `<div class="detail-header"><div class="path">${fullPath}</div><div class="status loading">Pending…</div></div>`;
+function renderLoadingDetail(entry) {
+  const detailEl = document.getElementById("detail");
+
+  let html = renderDetailHeader(entry, `<div class="status loading">Pending…</div>`);
   html += renderHeaders(entry);
   html += `<div class="loading-body"><div class="loading-spinner"></div><span>Waiting for response…</span></div>`;
   detailEl.innerHTML = html;
@@ -242,8 +186,6 @@ function selectEntry(index) {
 
   const detailEl = document.getElementById("detail");
 
-  const url = new URL(entry.request.url);
-  const fullPath = `${entry.request.method} ${url.pathname}${url.search}`;
   const status = entry.response ? entry.response.status : 0;
   const statusText = entry.response ? entry.response.statusText : "";
   const sCls = status >= 400 ? "err" : "ok";
@@ -257,11 +199,11 @@ function selectEntry(index) {
     } else {
       const raw = `Decode error\n\nRaw body (first 500 chars):\n${(body || "").slice(0, 500)}`;
       copyTexts["res-body"] = raw;
-      bodyHtml = `<div class="body-section">${copyButton("res-body")}<pre>${raw}</pre></div>`;
+      bodyHtml = `<div class="body-section">${copyButton("res-body")}<pre>${escapeHtml(raw)}</pre></div>`;
     }
 
-    const headerHtml = `<div class="detail-header"><div class="path">${fullPath}</div><div class="status ${sCls}">${status} ${statusText}</div></div>`;
-    detailEl.innerHTML = headerHtml + renderHeaders(entry) + bodyHtml;
+    const statusHtml = `<div class="status ${sCls}">${status} ${escapeHtml(statusText)}</div>`;
+    detailEl.innerHTML = renderDetailHeader(entry, statusHtml) + renderHeaders(entry) + bodyHtml;
     attachCopyListeners();
   }
 

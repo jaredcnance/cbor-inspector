@@ -216,6 +216,43 @@ test.describe("Panel UI states", () => {
     await page.screenshot({ path: path.join(snapshotsDir, "05-completed-error.png") });
   });
 
+  test("escapes HTML in decoded response bodies", async ({ page }) => {
+    await setupPanel(page);
+
+    await sendPortMessage(page, {
+      type: "request-started",
+      requestId: "1",
+      method: "POST",
+      url: "https://api.example.com/service/GetItem",
+      requestHeaders: [{ name: "Content-Type", value: "application/cbor" }],
+      timeStamp: Date.now(),
+    });
+
+    await page.locator(".entry").first().click();
+
+    const responseBody = cborBase64({ name: "<img src=x onerror=window.__xss=1>" });
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/GetItem",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        postData: { text: "" },
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    // The payload must render as inert text, not inject an <img> element.
+    await expect(page.locator("#detail pre")).toContainText("onerror");
+    await expect(page.locator("#detail img")).toHaveCount(0);
+    expect(await page.evaluate(() => window.__xss)).toBeUndefined();
+  });
+
   test("multiple requests - mixed states", async ({ page }) => {
     await setupPanel(page);
 
