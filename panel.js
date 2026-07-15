@@ -203,7 +203,10 @@ function renderHeaders(entry) {
   const reqHeaders = entry.request ? entry.request.headers : [];
   const resHeaders = entry.response ? entry.response.headers : [];
 
-  let html = `<details class="headers-section"><summary>Request Headers (${reqHeaders.length})</summary>${renderHeadersTable(reqHeaders)}</details>`;
+  const reqHeadersText = reqHeaders.map(h => `${h.name}: ${h.value}`).join("\n");
+  copyTexts["req-headers"] = reqHeadersText;
+
+  let html = `<details class="headers-section"><summary>Request Headers (${reqHeaders.length})</summary><div class="body-section">${copyButton("req-headers")}${renderHeadersTable(reqHeaders)}</div></details>`;
   html += renderRequestBody(entry);
   html += renderCookies(entry);
   if (resHeaders.length > 0) {

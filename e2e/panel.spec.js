@@ -424,6 +424,37 @@ test.describe("Panel UI states", () => {
     await expect(page.locator(".entry .resource")).toHaveText("PutItem");
   });
 
+  test("request headers section has copy button", async ({ page }) => {
+    await setupPanel(page);
+
+    const responseBody = cborBase64({ ok: true });
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/GetItem",
+        headers: [
+          { name: "Content-Type", value: "application/cbor" },
+          { name: "Accept", value: "application/cbor" },
+        ],
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    await page.locator(".entry").first().click();
+
+    const reqHeadersSection = page.locator("details", { hasText: "Request Headers (2)" });
+    await reqHeadersSection.locator("summary").click();
+    await expect(reqHeadersSection.locator(".copy-btn")).toBeVisible();
+
+    await page.screenshot({ path: path.join(snapshotsDir, "09-request-headers-expanded.png") });
+  });
+
   test("cookies section displays parsed cookies", async ({ page }) => {
     await setupPanel(page);
 
