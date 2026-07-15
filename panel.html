@@ -8,6 +8,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monos
 #toolbar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #2d2d2d; border-bottom: 1px solid #3e3e3e; }
 #toolbar button { background: #3e3e3e; color: #d4d4d4; border: 1px solid #555; border-radius: 3px; padding: 3px 10px; cursor: pointer; font-size: 11px; }
 #toolbar button:hover { background: #505050; }
+#filter-wrap { position: relative; display: inline-flex; align-items: center; }
+#filter-input { background: #1e1e1e; color: #d4d4d4; border: 1px solid #555; border-radius: 3px; padding: 3px 22px 3px 8px; font-size: 11px; width: 160px; outline: none; }
+#filter-input:focus { border-color: #569cd6; }
+#filter-input::placeholder { color: #666; }
+#filter-clear { position: absolute; right: 3px; background: none; border: none; color: #888; font-size: 13px; cursor: pointer; padding: 0 4px; line-height: 1; }
+#filter-clear:hover { color: #d4d4d4; }
 #toolbar .status { color: #888; font-size: 11px; margin-left: auto; }
 #container { display: flex; flex: 1; overflow: hidden; }
 #request-list { width: 320px; min-width: 200px; overflow-y: auto; border-right: 1px solid #3e3e3e; }
@@ -55,6 +61,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monos
 <body>
 <div id="toolbar">
   <button id="clear-btn">Clear</button>
+  <span id="filter-wrap"><input id="filter-input" type="text" placeholder="Filter operations…" /><button id="filter-clear" hidden>&times;</button></span>
   <span class="status" id="status">Listening for CBOR responses...</span>
 </div>
 <div id="container">

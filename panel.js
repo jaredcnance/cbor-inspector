@@ -5,6 +5,10 @@ const listEl = document.getElementById("request-list");
 const outputEl = document.getElementById("output");
 const statusEl = document.getElementById("status");
 const clearBtn = document.getElementById("clear-btn");
+const filterInput = document.getElementById("filter-input");
+const filterClear = document.getElementById("filter-clear");
+
+let filterText = "";
 
 const pendingRequests = new Map();
 
@@ -41,9 +45,18 @@ function statusClass(status) {
   return "";
 }
 
+function matchesFilter(entry) {
+  if (!filterText) return true;
+  const url = new URL(entry.request.url);
+  const resource = getResourceName(url.pathname);
+  return resource.toLowerCase().includes(filterText);
+}
+
 function renderList() {
   listEl.innerHTML = "";
   entries.forEach((entry, i) => {
+    if (!matchesFilter(entry)) return;
+
     const div = document.createElement("div");
     const status = entry.response ? entry.response.status : 0;
     const loading = entry._loading;
@@ -314,4 +327,17 @@ clearBtn.addEventListener("click", () => {
   selectedIndex = -1;
   renderList();
   outputEl.textContent = "Select a request to view decoded CBOR";
+});
+
+filterInput.addEventListener("input", () => {
+  filterText = filterInput.value.toLowerCase();
+  filterClear.hidden = !filterInput.value;
+  renderList();
+});
+
+filterClear.addEventListener("click", () => {
+  filterInput.value = "";
+  filterText = "";
+  filterClear.hidden = true;
+  renderList();
 });

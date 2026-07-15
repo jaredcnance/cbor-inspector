@@ -272,6 +272,158 @@ test.describe("Panel UI states", () => {
     await page.screenshot({ path: path.join(snapshotsDir, "06-mixed-states.png") });
   });
 
+  test("filter narrows request list by operation name", async ({ page }) => {
+    await setupPanel(page);
+
+    const responseBody = cborBase64({ ok: true });
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/GetItem",
+        headers: [{ name: "Accept", value: "application/cbor" }],
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/PutItem",
+        headers: [{ name: "Accept", value: "application/cbor" }],
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    await expect(page.locator(".entry")).toHaveCount(2);
+
+    await page.fill("#filter-input", "Put");
+    await expect(page.locator(".entry")).toHaveCount(1);
+    await expect(page.locator(".entry .resource")).toHaveText("PutItem");
+
+    await page.fill("#filter-input", "");
+    await expect(page.locator(".entry")).toHaveCount(2);
+  });
+
+  test("filter is case-insensitive", async ({ page }) => {
+    await setupPanel(page);
+
+    const responseBody = cborBase64({ ok: true });
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/GetItem",
+        headers: [{ name: "Accept", value: "application/cbor" }],
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    await page.fill("#filter-input", "getitem");
+    await expect(page.locator(".entry")).toHaveCount(1);
+
+    await page.fill("#filter-input", "GETITEM");
+    await expect(page.locator(".entry")).toHaveCount(1);
+  });
+
+  test("filter clear button resets filter", async ({ page }) => {
+    await setupPanel(page);
+
+    const responseBody = cborBase64({ ok: true });
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/GetItem",
+        headers: [{ name: "Accept", value: "application/cbor" }],
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/PutItem",
+        headers: [{ name: "Accept", value: "application/cbor" }],
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    await page.fill("#filter-input", "Get");
+    await expect(page.locator(".entry")).toHaveCount(1);
+    await expect(page.locator("#filter-clear")).toBeVisible();
+
+    await page.click("#filter-clear");
+    await expect(page.locator("#filter-input")).toHaveValue("");
+    await expect(page.locator(".entry")).toHaveCount(2);
+    await expect(page.locator("#filter-clear")).toBeHidden();
+  });
+
+  test("filter applies to new incoming requests", async ({ page }) => {
+    await setupPanel(page);
+
+    const responseBody = cborBase64({ ok: true });
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/GetItem",
+        headers: [{ name: "Accept", value: "application/cbor" }],
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    await page.fill("#filter-input", "Put");
+    await expect(page.locator(".entry")).toHaveCount(0);
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/PutItem",
+        headers: [{ name: "Accept", value: "application/cbor" }],
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    await expect(page.locator(".entry")).toHaveCount(1);
+    await expect(page.locator(".entry .resource")).toHaveText("PutItem");
+  });
+
   test("clear button resets everything", async ({ page }) => {
     await setupPanel(page);
 

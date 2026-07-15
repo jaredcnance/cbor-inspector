@@ -4,6 +4,8 @@
 
 When you make changes that affect project structure, commands, or architecture (new files, renamed modules, new scripts, changed permissions/APIs, new test suites), update the relevant sections of this file in the same commit. This keeps the file accurate for all developers using Claude Code on this repo.
 
+All UI/behavioral changes must include E2E tests in `e2e/panel.spec.js`. Run `npm run test:e2e` to verify before considering work complete.
+
 ## Project overview
 
 Firefox/Chrome DevTools extension that auto-decodes CBOR (specifically Smithy RPC v2 CBOR) responses into syntax-highlighted JSON. Self-hosted via GitHub Releases with auto-updates for Firefox.
