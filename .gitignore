@@ -4,3 +4,8 @@ dist/
 .amo-upload-uuid
 snapshots/
 e2e/test-results/
+.omni/
+.claude/
+.cursor/
+.kiro/
+.agents/
