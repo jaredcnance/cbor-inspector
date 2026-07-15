@@ -1,14 +1,20 @@
 {
   "manifest_version": 3,
   "name": "CBOR Decoder",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "DevTools panel that auto-decodes Smithy RPC v2 CBOR responses with syntax-highlighted JSON output",
   "devtools_page": "devtools.html",
-  "permissions": ["webRequest"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "webRequest"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "background": {
     "service_worker": "background.js",
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
   "icons": {
     "48": "icons/icon-48.png",
