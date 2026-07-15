@@ -33,9 +33,17 @@ console.log(`Updated updates.json → v${version}`);
 
 const run = (cmd) => execSync(cmd, { stdio: "inherit", cwd: path.join(__dirname, "..") });
 
+const lastTag = execSync("git describe --tags --abbrev=0 2>/dev/null || echo", { cwd: path.join(__dirname, "..") }).toString().trim();
+const logRange = lastTag ? `${lastTag}..HEAD` : "HEAD~10..HEAD";
+const changelog = execSync(`git log ${logRange} --oneline --no-decorate`, { cwd: path.join(__dirname, "..") }).toString().trim();
+const notes = changelog || `CBOR Decoder v${version}`;
+
+const notesFile = path.join(distDir, "release-notes.txt");
+fs.writeFileSync(notesFile, notes);
+
 run(`git add updates.json manifest.json`);
 run(`git commit -m "Publish v${version}"`);
 run(`git push origin main`);
 run(`git push github main`);
-run(`gh release create v${version} "${xpiPath}" --repo jaredcnance/cbor-inspector --title "v${version}" --notes "CBOR Decoder v${version}"`);
+run(`gh release create v${version} "${xpiPath}" --repo jaredcnance/cbor-inspector --title "v${version}" --notes-file "${notesFile}"`);
 console.log(`Released v${version} on GitHub`);
