@@ -21,14 +21,14 @@ jobs:
         run: node scripts/bump-version.js
 
       - name: Sign extension
-        run: npx web-ext sign --source-dir . --artifacts-dir dist --ignore-files "test/" "node_modules/" "package.json" "package-lock.json" ".git" ".gitignore" ".githooks" "dist/" "updates.json" "scripts/" ".env" ".github/" --channel unlisted
+        run: npx web-ext sign --source-dir src --artifacts-dir dist --channel unlisted
         env:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
 
       - name: Update updates.json and create release
         run: |
-          VERSION=$(node -p "require('./manifest.json').version")
+          VERSION=$(node -p "require('./src/manifest.json').version")
           XPI=$(ls dist/*.xpi | head -1)
           XPI_NAME=$(basename "$XPI")
           UPDATE_LINK="https://github.com/jaredcnance/cbor-inspector/releases/download/v${VERSION}/${XPI_NAME}"
@@ -59,7 +59,7 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add updates.json manifest.json
+          git add updates.json src/manifest.json
           git commit -m "Publish v${VERSION}"
           git push
 

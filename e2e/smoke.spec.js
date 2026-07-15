@@ -2,7 +2,7 @@ const { test, expect, chromium } = require("@playwright/test");
 const path = require("path");
 const { createTestServer } = require("./test-server.js");
 
-const extensionDir = path.resolve(__dirname, "..");
+const extensionDir = path.resolve(__dirname, "../src");
 const snapshotsDir = path.resolve(__dirname, "../snapshots");
 
 test.describe("Smoke test - real extension", () => {

@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const manifestPath = path.join(__dirname, "..", "manifest.json");
+const manifestPath = path.join(__dirname, "..", "src", "manifest.json");
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 
 const parts = manifest.version.split(".").map(Number);

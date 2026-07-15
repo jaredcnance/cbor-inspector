@@ -4,7 +4,7 @@ const { execSync } = require("child_process");
 
 const distDir = path.join(__dirname, "..", "dist");
 const updatesPath = path.join(__dirname, "..", "updates.json");
-const manifestPath = path.join(__dirname, "..", "manifest.json");
+const manifestPath = path.join(__dirname, "..", "src", "manifest.json");
 
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const version = manifest.version;
@@ -45,7 +45,7 @@ const notes = changelog || `CBOR Decoder v${version}`;
 const notesFile = path.join(distDir, "release-notes.txt");
 fs.writeFileSync(notesFile, notes);
 
-run(`git add updates.json manifest.json`);
+run(`git add updates.json src/manifest.json`);
 run(`git commit -m "chore: Publish v${version}"`);
 run(`git push origin main`);
 run(`gh release create v${version} "${xpiPath}" --repo jaredcnance/cbor-inspector --title "v${version}" --notes-file "${notesFile}"`);

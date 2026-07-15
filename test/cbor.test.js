@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-const CBOR = require("../cbor.js");
+const CBOR = require("../src/cbor.js");
 
 function fromHex(hex) {
   const bytes = new Uint8Array(hex.length / 2);

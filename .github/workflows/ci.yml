@@ -18,7 +18,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - name: Lint extension (allow update_url for self-hosted)
-        run: npx web-ext lint --source-dir . --ignore-files "test/" "node_modules/" "package.json" "package-lock.json" ".git" ".gitignore" ".githooks" "dist/" "updates.json" "scripts/" ".env" ".github/" --self-hosted
+        run: npx web-ext lint --source-dir src --self-hosted
 
   e2e:
     runs-on: ubuntu-latest

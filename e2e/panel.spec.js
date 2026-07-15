@@ -2,7 +2,7 @@ const { test, expect } = require("@playwright/test");
 const path = require("path");
 const { encode } = require("./cbor-encode.js");
 
-const panelPath = path.resolve(__dirname, "../panel.html");
+const panelPath = path.resolve(__dirname, "../src/panel.html");
 const snapshotsDir = path.resolve(__dirname, "../snapshots");
 
 function cborBase64(obj) {

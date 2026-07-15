@@ -25,7 +25,7 @@ npm run test:e2e:all  # All E2E suites
 ## Manual testing in Firefox
 
 1. Open `about:debugging` > This Firefox > Load Temporary Add-on
-2. Select `manifest.json` from the project root
+2. Select `src/manifest.json`
 3. Open DevTools on any page — the "CBOR" panel appears
 4. Visit a page that makes Smithy RPC v2 CBOR requests (content-type containing `cbor` or `application/vnd.amazon`)
 
@@ -34,7 +34,7 @@ After modifying `manifest.json`, you must remove and re-add the extension, then 
 ## Manual testing in Chrome
 
 1. Open `chrome://extensions` with Developer mode enabled
-2. Click "Load unpacked" and select the project root
+2. Click "Load unpacked" and select the `src/` directory
 3. Open DevTools on any page — the "CBOR" panel appears
 
 ## Commit conventions
@@ -55,10 +55,10 @@ Only `feat:` and `fix:` commits appear in GitHub Release notes. Everything else 
 ## Linting
 
 ```bash
-npx web-ext lint --source-dir . --self-hosted --ignore-files "test/" "node_modules/" "package.json" "package-lock.json" ".git" ".gitignore" ".githooks" "dist/" "updates.json" "scripts/" ".env" ".github/"
+npx web-ext lint --source-dir src --self-hosted
 ```
 
-The `--self-hosted` flag is required because the manifest includes `update_url`.
+The `--self-hosted` flag is required because the manifest includes `update_url`. Because only the shipped extension lives in `src/`, no `--ignore-files` list is needed.
 
 ## Publishing a release
 

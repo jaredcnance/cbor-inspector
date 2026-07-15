@@ -20,5 +20,5 @@ if (!process.env.WEB_EXT_API_KEY || !process.env.WEB_EXT_API_SECRET) {
 const run = (cmd) => execSync(cmd, { stdio: "inherit", env: process.env });
 
 run("node scripts/bump-version.js");
-run("npx web-ext sign --source-dir . --artifacts-dir dist --ignore-files test/ node_modules/ package.json package-lock.json .git .gitignore .githooks dist/ updates.json scripts/ .env --channel unlisted");
+run("npx web-ext sign --source-dir src --artifacts-dir dist --channel unlisted");
 run("node scripts/post-publish.js");

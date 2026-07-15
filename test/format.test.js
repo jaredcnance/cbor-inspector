@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-const Format = require("../format.js");
+const Format = require("../src/format.js");
 
 describe("escapeHtml", () => {
   it("escapes HTML-significant characters", () => {
