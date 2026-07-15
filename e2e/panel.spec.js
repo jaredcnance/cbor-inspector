@@ -424,6 +424,69 @@ test.describe("Panel UI states", () => {
     await expect(page.locator(".entry .resource")).toHaveText("PutItem");
   });
 
+  test("cookies section displays parsed cookies", async ({ page }) => {
+    await setupPanel(page);
+
+    const responseBody = cborBase64({ ok: true });
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/GetItem",
+        headers: [
+          { name: "Content-Type", value: "application/cbor" },
+          { name: "Cookie", value: "session=abc123; theme=dark; lang=en" },
+        ],
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    await page.locator(".entry").first().click();
+
+    const cookiesSection = page.locator("details", { hasText: "Cookies (3)" });
+    await expect(cookiesSection).toBeVisible();
+    await expect(cookiesSection).not.toHaveAttribute("open", "");
+
+    await cookiesSection.locator("summary").click();
+    await expect(cookiesSection.locator(".header-name").nth(0)).toHaveText("session");
+    await expect(cookiesSection.locator(".header-value").nth(0)).toHaveText("abc123");
+    await expect(cookiesSection.locator(".header-name").nth(1)).toHaveText("theme");
+    await expect(cookiesSection.locator(".header-value").nth(1)).toHaveText("dark");
+    await expect(cookiesSection.locator(".header-name").nth(2)).toHaveText("lang");
+    await expect(cookiesSection.locator(".header-value").nth(2)).toHaveText("en");
+    await expect(cookiesSection.locator(".copy-btn")).toBeVisible();
+
+    await page.screenshot({ path: path.join(snapshotsDir, "08-cookies-expanded.png") });
+  });
+
+  test("cookies section hidden when no cookies present", async ({ page }) => {
+    await setupPanel(page);
+
+    const responseBody = cborBase64({ ok: true });
+
+    await fireRequestFinished(page, {
+      request: {
+        method: "POST",
+        url: "https://api.example.com/service/GetItem",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+      },
+      response: {
+        status: 200,
+        statusText: "OK",
+        headers: [{ name: "Content-Type", value: "application/cbor" }],
+        content: { text: responseBody },
+      },
+    });
+
+    await page.locator(".entry").first().click();
+    await expect(page.locator("details", { hasText: "Cookies" })).toHaveCount(0);
+  });
+
   test("clear button resets everything", async ({ page }) => {
     await setupPanel(page);
 

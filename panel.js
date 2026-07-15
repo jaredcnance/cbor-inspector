@@ -163,12 +163,49 @@ function renderRequestBody(entry) {
   return `<details class="headers-section"><summary>Request Body</summary><div class="body-section">${copyButton("req-body")}${content}</div></details>`;
 }
 
+function parseCookies(headers) {
+  if (!headers) return [];
+  const cookies = [];
+  for (const h of headers) {
+    if (h.name.toLowerCase() === "cookie") {
+      for (const pair of h.value.split(";")) {
+        const eq = pair.indexOf("=");
+        if (eq > 0) {
+          cookies.push({ name: pair.slice(0, eq).trim(), value: pair.slice(eq + 1).trim() });
+        }
+      }
+    }
+  }
+  return cookies;
+}
+
+function renderCookies(entry) {
+  const reqHeaders = entry.request ? entry.request.headers : [];
+  const cookies = parseCookies(reqHeaders);
+  if (cookies.length === 0) return "";
+
+  const cookieText = cookies.map(c => `${c.name}=${c.value}`).join("\n");
+  copyTexts["req-cookies"] = cookieText;
+
+  let html = `<details class="headers-section"><summary>Cookies (${cookies.length})</summary>`;
+  html += `<div class="body-section">${copyButton("req-cookies")}`;
+  html += '<table class="headers-table"><tr><th>Name</th><th>Value</th></tr>';
+  for (const c of cookies) {
+    const name = c.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const value = c.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    html += `<tr><td class="header-name">${name}</td><td class="header-value">${value}</td></tr>`;
+  }
+  html += "</table></div></details>";
+  return html;
+}
+
 function renderHeaders(entry) {
   const reqHeaders = entry.request ? entry.request.headers : [];
   const resHeaders = entry.response ? entry.response.headers : [];
 
   let html = `<details class="headers-section"><summary>Request Headers (${reqHeaders.length})</summary>${renderHeadersTable(reqHeaders)}</details>`;
   html += renderRequestBody(entry);
+  html += renderCookies(entry);
   if (resHeaders.length > 0) {
     html += `<details class="headers-section"><summary>Response Headers (${resHeaders.length})</summary>${renderHeadersTable(resHeaders)}</details>`;
   }
