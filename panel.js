@@ -210,7 +210,9 @@ function renderHeaders(entry) {
   html += renderRequestBody(entry);
   html += renderCookies(entry);
   if (resHeaders.length > 0) {
-    html += `<details class="headers-section"><summary>Response Headers (${resHeaders.length})</summary>${renderHeadersTable(resHeaders)}</details>`;
+    const resHeadersText = resHeaders.map(h => `${h.name}: ${h.value}`).join("\n");
+    copyTexts["res-headers"] = resHeadersText;
+    html += `<details class="headers-section"><summary>Response Headers (${resHeaders.length})</summary><div class="body-section">${copyButton("res-headers")}${renderHeadersTable(resHeaders)}</div></details>`;
   }
   return html;
 }
