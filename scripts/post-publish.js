@@ -46,8 +46,7 @@ const notesFile = path.join(distDir, "release-notes.txt");
 fs.writeFileSync(notesFile, notes);
 
 run(`git add updates.json manifest.json`);
-run(`git commit -m "Publish v${version}"`);
+run(`git commit -m "chore: Publish v${version}"`);
 run(`git push origin main`);
-run(`git push github main`);
 run(`gh release create v${version} "${xpiPath}" --repo jaredcnance/cbor-inspector --title "v${version}" --notes-file "${notesFile}"`);
 console.log(`Released v${version} on GitHub`);

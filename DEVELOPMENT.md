@@ -89,16 +89,12 @@ npm run publish:firefox
 
 This performs the same steps as CI locally. After completion, it pushes to both remotes and creates the GitHub Release.
 
-### Remotes
+### Handling rejected pushes
 
-The project has two remotes:
-- `origin` — `ssh://git.amazon.com/pkg/CBorDebugger` (internal)
-- `github` — `https://github.com/jaredcnance/cbor-inspector.git` (public)
-
-Always push to both. If the GitHub remote rejects (e.g., after a CI publish commit), merge first:
+The CI publish workflow pushes version bump commits. If `git push` is rejected, rebase first:
 
 ```bash
-git pull github main --no-rebase
+git pull -r origin main
 ```
 
 ### Release notes
