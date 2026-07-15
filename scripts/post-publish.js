@@ -35,7 +35,11 @@ const run = (cmd) => execSync(cmd, { stdio: "inherit", cwd: path.join(__dirname,
 
 const lastTag = execSync("git describe --tags --abbrev=0 2>/dev/null || echo", { cwd: path.join(__dirname, "..") }).toString().trim();
 const logRange = lastTag ? `${lastTag}..HEAD` : "HEAD~10..HEAD";
-const changelog = execSync(`git log ${logRange} --oneline --no-decorate`, { cwd: path.join(__dirname, "..") }).toString().trim();
+const rawLog = execSync(`git log ${logRange} --oneline --no-decorate`, { cwd: path.join(__dirname, "..") }).toString().trim();
+const changelog = rawLog.split("\n")
+  .filter(line => /^[a-f0-9]+ (feat|fix)[:(]/.test(line))
+  .map(line => line.replace(/^[a-f0-9]+ /, ""))
+  .join("\n");
 const notes = changelog || `CBOR Decoder v${version}`;
 
 const notesFile = path.join(distDir, "release-notes.txt");

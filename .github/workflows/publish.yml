@@ -50,10 +50,11 @@ jobs:
 
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -n "$LAST_TAG" ]; then
-            NOTES=$(git log "${LAST_TAG}..HEAD" --oneline --no-decorate)
+            RAW_LOG=$(git log "${LAST_TAG}..HEAD" --oneline --no-decorate)
           else
-            NOTES=$(git log HEAD~10..HEAD --oneline --no-decorate)
+            RAW_LOG=$(git log HEAD~10..HEAD --oneline --no-decorate)
           fi
+          NOTES=$(echo "$RAW_LOG" | grep -E "^[a-f0-9]+ (feat|fix)[:(]" | sed 's/^[a-f0-9]* //' || true)
           NOTES=${NOTES:-"CBOR Decoder v${VERSION}"}
 
           git config user.name "github-actions[bot]"

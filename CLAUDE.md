@@ -6,6 +6,25 @@ When you make changes that affect project structure, commands, or architecture (
 
 All UI/behavioral changes must include E2E tests in `e2e/panel.spec.js`. Run `npm run test:e2e` to verify before considering work complete.
 
+## Commit conventions
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) prefixes. Only `feat:` and `fix:` appear in release notes — everything else is filtered out.
+
+- `feat:` — new user-facing feature
+- `fix:` — bug fix
+- `refactor:` — code restructuring with no behavior change
+- `test:` — adding or updating tests only
+- `docs:` — documentation changes
+- `chore:` — tooling, dependencies, CI, publishing scripts
+
+Examples:
+```
+feat: Add filter input to request list
+fix: Decode indefinite-length byte strings correctly
+chore: Update updates.json for v1.0.11
+refactor: Extract CBOR detection into shared helper
+```
+
 ## Project overview
 
 Firefox/Chrome DevTools extension that auto-decodes CBOR (specifically Smithy RPC v2 CBOR) responses into syntax-highlighted JSON. Self-hosted via GitHub Releases with auto-updates for Firefox.
