@@ -31,48 +31,7 @@ Chrome installation currently requires loading the extension manually in develop
 
 ## Development
 
-### Local installation
-
-#### Firefox
-
-1. Navigate to `about:debugging#/runtime/this-firefox`
-2. Click **Load Temporary Add-on...**
-3. Select the `manifest.json` file from this directory
-
-#### Chrome
-
-1. Navigate to `chrome://extensions`
-2. Enable **Developer mode** (toggle in top-right)
-3. Click **Load unpacked**
-4. Select this directory
-
-### Running tests
-
-```bash
-npm install
-npm test          # unit tests (vitest)
-npm run test:e2e  # E2E panel tests (Playwright, headless)
-```
-
-To run the full E2E suite including the smoke test (requires headed Chromium):
-
-```bash
-npm run test:e2e:all
-```
-
-E2E tests generate UI snapshots in `snapshots/` for visual review. In CI, these are uploaded as build artifacts.
-
-### Pre-commit hook
-
-A pre-commit hook runs the test suite before each commit. It's configured automatically when you run `npm install` (via the `prepare` script).
-
-### Publishing
-
-```bash
-npm run publish:firefox
-```
-
-This bumps the patch version, signs with Mozilla, updates `updates.json`, commits, pushes to both remotes, and creates a GitHub Release.
+Setup, local installation, testing, and publishing are documented in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
 

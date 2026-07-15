@@ -87,7 +87,7 @@ Then run:
 npm run publish:firefox
 ```
 
-This performs the same steps as CI locally. After completion, it pushes to both remotes and creates the GitHub Release.
+This performs the same steps as CI locally. After completion, it pushes to `origin` and creates the GitHub Release.
 
 ### Handling rejected pushes
 

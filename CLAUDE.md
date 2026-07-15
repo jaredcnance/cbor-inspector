@@ -89,23 +89,9 @@ The GitHub Actions publish workflow pushes commits (version bumps). If `git push
 
 ## Publishing
 
-`npm run publish:firefox` does everything:
-1. Bumps patch version in manifest.json
-2. Signs with Mozilla (credentials from `.env`)
-3. Updates `updates.json` with the GitHub Release download URL
-4. Commits and pushes to both remotes
-5. Creates a GitHub Release with the `.xpi` attached
+`npm run publish:firefox` runs the full release. The steps, credentials, and CI workflow are documented in [DEVELOPMENT.md](DEVELOPMENT.md#publishing-a-release) — don't restate them here.
 
-### Credentials
-
-`.env` file (gitignored):
-```
-WEB_EXT_API_KEY=<JWT issuer from addons.mozilla.org>
-WEB_EXT_API_SECRET=<JWT secret>
-```
-
-### Quirks
-
+Claude-relevant quirks:
 - AMO sometimes rejects JWT with "exp is too long" — this is transient, just retry
 - The `.xpi` filename prefix (`d49e88be5e334d0faee3`) is the stable AMO addon UUID, it doesn't change between versions
 - `web-ext lint` must use `--self-hosted` flag to allow `update_url` in manifest
@@ -121,10 +107,6 @@ Simply reloading the extension is not sufficient for manifest changes.
 
 ## Linting
 
-```bash
-npx web-ext lint --source-dir . --self-hosted --ignore-files "test/" "node_modules/" "package.json" "package-lock.json" ".git" ".gitignore" ".githooks" "dist/" "updates.json" "scripts/" ".env" ".github/"
-```
-
-Remaining warnings (non-blocking):
+The exact `web-ext lint` command lives in [DEVELOPMENT.md](DEVELOPMENT.md#linting). Remaining warnings (non-blocking):
 - `MISSING_DATA_COLLECTION_PERMISSIONS` — informational, will be required in future Firefox versions
 - `UNSAFE_VAR_ASSIGNMENT` (innerHTML) — safe in our context (DevTools panel, not content script)
