@@ -10,6 +10,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history + tags for git describe / changelog range
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -50,10 +52,13 @@ jobs:
 
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -n "$LAST_TAG" ]; then
-            RAW_LOG=$(git log "${LAST_TAG}..HEAD" --oneline --no-decorate)
+            RANGE="${LAST_TAG}..HEAD"
           else
-            RAW_LOG=$(git log HEAD~10..HEAD --oneline --no-decorate)
+            # No tags yet (first release): use whole history rather than a fixed
+            # HEAD~N that fails on repos with fewer than N commits.
+            RANGE="HEAD"
           fi
+          RAW_LOG=$(git log "$RANGE" --oneline --no-decorate)
           NOTES=$(echo "$RAW_LOG" | grep -E "^[a-f0-9]+ (feat|fix)[:(]" | sed 's/^[a-f0-9]* //' || true)
           NOTES=${NOTES:-"CBOR Decoder v${VERSION}"}
 
