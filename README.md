@@ -2,6 +2,8 @@
 
 DevTools extension that auto-decodes Smithy RPC v2 CBOR (`application/cbor`) responses. Works in both Firefox and Chrome.
 
+![The CBOR DevTools panel: a list of captured requests on the left and a selected request's decoded JSON, headers, and body on the right](docs/screenshot.png)
+
 ## Features
 
 - Adds a **CBOR** tab to DevTools

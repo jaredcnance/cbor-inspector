@@ -8,6 +8,7 @@
     "test:e2e": "npx playwright test --project=panel",
     "test:e2e:smoke": "npx playwright test --project=smoke",
     "test:e2e:all": "npx playwright test",
+    "screenshot": "npx playwright test --project=screenshot",
     "prepare": "git config core.hooksPath .githooks",
     "build:firefox": "web-ext build --source-dir src --artifacts-dir dist",
     "publish:firefox": "node scripts/publish.js"

@@ -22,6 +22,18 @@ npm run test:e2e:smoke  # Smoke test with real extension loaded in Chromium
 npm run test:e2e:all  # All E2E suites
 ```
 
+## Regenerating the README screenshot
+
+The hero image in the README is generated from the panel with mocked data:
+
+```bash
+npm run screenshot    # writes docs/screenshot.png
+```
+
+Run this after UI changes that affect the panel's appearance, then commit
+the updated `docs/screenshot.png`. It is a separate Playwright project
+(`screenshot`), so it is not part of `npm run test:e2e` and never runs in CI.
+
 ## Manual testing in Firefox
 
 1. Open `about:debugging` > This Firefox > Load Temporary Add-on

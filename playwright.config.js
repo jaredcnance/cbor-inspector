@@ -15,5 +15,9 @@ module.exports = defineConfig({
       name: "smoke",
       testMatch: "smoke.spec.js",
     },
+    {
+      name: "screenshot",
+      testMatch: "screenshot.spec.js",
+    },
   ],
 });
