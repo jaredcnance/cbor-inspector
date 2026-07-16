@@ -74,15 +74,22 @@ The `--self-hosted` flag is required because the manifest includes `update_url`.
 
 ## Publishing a release
 
+Both CI and local publishing run the same scripts (`scripts/publish.js` →
+`bump-version.js`, `web-ext sign`, `post-publish.js`):
+1. Run tests
+2. Bump the patch version in `src/manifest.json`
+3. Sign the extension with Mozilla (unlisted) — **the one irreversible step**
+4. Update `updates.json` with the new download URL
+5. Commit, push, tag `vX.Y.Z`
+6. Create a GitHub Release with the `.xpi` and auto-generated notes
+
+The bump is **resume-aware** (it only advances the version if the current one
+is already tagged) and steps 4–6 are **idempotent**, so re-running after a
+failure finishes the interrupted release rather than double-bumping.
+
 ### Automated (CI)
 
-Trigger the **Publish** workflow manually from GitHub Actions. It will:
-1. Run tests
-2. Bump the patch version in `manifest.json`
-3. Sign the extension with Mozilla (unlisted)
-4. Update `updates.json` with the new download URL
-5. Commit and push
-6. Create a GitHub Release with the `.xpi` and auto-generated notes
+Trigger the **Publish** workflow manually from GitHub Actions.
 
 ### Local
 
@@ -93,13 +100,24 @@ WEB_EXT_API_KEY=<JWT issuer from addons.mozilla.org>
 WEB_EXT_API_SECRET=<JWT secret>
 ```
 
-Then run:
+Then run `npm run publish:firefox`.
 
-```bash
-npm run publish:firefox
-```
+### Recovering a failed release
 
-This performs the same steps as CI locally. After completion, it pushes to `origin` and creates the GitHub Release.
+Signing (step 3) permanently claims a version on AMO. If a release fails
+*after* signing but before the release is on GitHub, AMO has the version but
+the repo doesn't — and re-running will hit `Conflict: Version X already exists`.
+`publish.js` fails closed here with recovery instructions. To recover:
+
+1. Download the signed `vX.Y.Z` `.xpi` from the AMO developer dashboard
+2. Place it at `dist/cbor_inspector-X.Y.Z.xpi`
+3. Run `node scripts/post-publish.js` — idempotent; it updates `updates.json`,
+   commits/tags/pushes, and creates the GitHub Release, skipping anything
+   already done.
+
+Do **not** bump the version to work around the conflict unless the code
+actually changed since that signing — otherwise `updates.json` would advertise
+a version whose published `.xpi` contains different code.
 
 ### Handling rejected pushes
 

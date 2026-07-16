@@ -19,55 +19,18 @@ jobs:
       - run: npm ci
       - run: npm test
 
-      - name: Bump version
-        run: node scripts/bump-version.js
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Sign extension
-        run: npx web-ext sign --source-dir src --artifacts-dir dist --channel unlisted
+      # Runs the same scripts as local publishing (bump → sign → post-publish),
+      # so CI and `npm run publish:firefox` share one implementation. bump is
+      # resume-aware and post-publish is idempotent, so a re-run finishes an
+      # interrupted release instead of double-bumping.
+      - name: Publish
+        run: node scripts/publish.js
         env:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
-
-      - name: Update updates.json and create release
-        run: |
-          VERSION=$(node -p "require('./src/manifest.json').version")
-          XPI=$(ls dist/*.xpi | head -1)
-          XPI_NAME=$(basename "$XPI")
-          UPDATE_LINK="https://github.com/jaredcnance/cbor-inspector/releases/download/v${VERSION}/${XPI_NAME}"
-
-          cat > updates.json << EOF
-          {
-            "addons": {
-              "cbor-decoder@noreply": {
-                "updates": [
-                  {
-                    "version": "${VERSION}",
-                    "update_link": "${UPDATE_LINK}"
-                  }
-                ]
-              }
-            }
-          }
-          EOF
-
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -n "$LAST_TAG" ]; then
-            RANGE="${LAST_TAG}..HEAD"
-          else
-            # No tags yet (first release): use whole history rather than a fixed
-            # HEAD~N that fails on repos with fewer than N commits.
-            RANGE="HEAD"
-          fi
-          RAW_LOG=$(git log "$RANGE" --oneline --no-decorate)
-          NOTES=$(echo "$RAW_LOG" | grep -E "^[a-f0-9]+ (feat|fix)[:(]" | sed 's/^[a-f0-9]* //' || true)
-          NOTES=${NOTES:-"CBOR Decoder v${VERSION}"}
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add updates.json src/manifest.json
-          git commit -m "Publish v${VERSION}"
-          git push
-
-          gh release create "v${VERSION}" "${XPI}" --title "v${VERSION}" --notes "$NOTES"
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
