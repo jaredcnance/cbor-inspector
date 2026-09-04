@@ -39,7 +39,9 @@ npm run test:e2e:smoke     # real extension smoke test (e2e/smoke.spec.js) — l
 npm run test:e2e:all       # both e2e suites
 npm run screenshot         # regenerates docs/screenshot.png (README image); not run in CI
 npm run build:firefox      # packages .zip in dist/ for manual inspection
+npm run build:chrome       # packages .zip in dist/ for Chrome Web Store upload
 npm run publish:firefox    # full release: bump → sign → commit → push → GitHub Release
+npm run publish:chrome     # ships current version to Chrome Web Store (no bump/git; run after publish:firefox)
 ```
 
 Pre-commit hook (`.githooks/pre-commit`) runs `npm test` before each commit.
@@ -82,7 +84,8 @@ Everything the browser ships lives in `src/`; everything outside it is dev tooli
 - **CBOR detection** — matches `content-type` containing "cbor" or "application/vnd.amazon" on both request Accept and response Content-Type headers
 - **No bundler** — plain JS files loaded via script tags; `cbor.js` and `format.js` export via `module.exports` for Node.js tests but expose globals (`CBOR`, `Format`) in the browser. Load order in `panel.html`: `cbor.js` → `format.js` → `panel.js`.
 - **HTML escaping** — because rendering uses `innerHTML` (see below), any untrusted text (decoded bodies, header/cookie values, URLs, status text) MUST pass through `Format.escapeHtml` before interpolation. `syntaxHighlight` escapes internally. Keep new render code routed through `renderSection`/`renderNameValueTable` so escaping stays centralized.
-- **Self-hosted distribution** — signed by Mozilla as unlisted, hosted on GitHub Releases, auto-updates via `updates.json`
+- **Self-hosted distribution (Firefox)** — signed by Mozilla as unlisted, hosted on GitHub Releases, auto-updates via `updates.json`
+- **Chrome distribution** — Chrome has no self-hosted auto-update path for regular users, so Chrome ships via the Chrome Web Store (published Unlisted); the store handles auto-updates, so there is no `updates.json` equivalent. Same `src/` ships to both; `browser_specific_settings.gecko` and `background.scripts` are Chrome-ignored. `publish:chrome` does not bump/tag (Firefox flow owns the version) — run it after `publish:firefox`.
 
 ## Remote
 
@@ -94,6 +97,7 @@ The GitHub Actions publish workflow pushes commits (version bumps). If `git push
 
 - **CI workflow** (`.github/workflows/ci.yml`) — runs on push/PR to main: `npm test` + `web-ext lint` + Playwright E2E (`panel` project only, Chromium)
 - **Publish workflow** (`.github/workflows/publish.yml`) — manual dispatch: bumps version, signs with Mozilla, creates GitHub Release with `.xpi`
+- **Publish Chrome workflow** (`.github/workflows/publish-chrome.yml`) — manual dispatch: builds `.zip` from current version and uploads to the Chrome Web Store (no bump/git). Run after the Firefox Publish workflow. Needs `CHROME_EXTENSION_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN` secrets.
 
 ## Publishing
 

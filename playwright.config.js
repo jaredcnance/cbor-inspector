@@ -19,5 +19,9 @@ module.exports = defineConfig({
       name: "screenshot",
       testMatch: "screenshot.spec.js",
     },
+    {
+      name: "store-screenshot",
+      testMatch: "store-screenshot.spec.js",
+    },
   ],
 });

@@ -119,6 +119,49 @@ Do **not** bump the version to work around the conflict unless the code
 actually changed since that signing — otherwise `updates.json` would advertise
 a version whose published `.xpi` contains different code.
 
+## Publishing to Chrome
+
+Chrome does not support Firefox-style self-hosted auto-updates for regular
+users — self-hosted `.crx` + `update_url` only works under enterprise policy or
+on Linux. The only path that gives end users frictionless install + automatic
+background updates is the **Chrome Web Store**, published as **Unlisted** (not
+searchable, reachable only via a direct link). The store handles all
+auto-updates, so there is no Chrome equivalent of `updates.json` to maintain.
+
+Chrome ships the exact same `src/` as Firefox; `browser_specific_settings.gecko`
+and `background.scripts` are ignored by Chrome. Do **not** add a Chrome
+`update_url` — the store manages updates and rejects items that carry one.
+
+### One-time setup
+
+1. In the [Chrome Web Store dev console](https://chrome.google.com/webstore/devconsole),
+   upload a first `.zip` (`npm run build:chrome`) to **create the item**, set
+   visibility to **Unlisted**, complete the listing, and submit for review. This
+   assigns the permanent **extension ID**. The API cannot create an item — only
+   this first upload can.
+2. Create API credentials for automation: in Google Cloud Console create a
+   project, enable the **Chrome Web Store API**, create an **OAuth 2.0 Client ID**
+   (Desktop app) for `CLIENT_ID`/`CLIENT_SECRET`, then run the OAuth flow once to
+   get a long-lived `REFRESH_TOKEN` (see the
+   [chrome-webstore-upload-cli docs](https://github.com/fregante/chrome-webstore-upload-cli)).
+3. Store `EXTENSION_ID`, `CLIENT_ID`, `CLIENT_SECRET`, `REFRESH_TOKEN` as GitHub
+   Actions secrets (`CHROME_*`) and, for local publishing, in `.env`.
+
+### Publishing a release
+
+Unlike Firefox, `publish:chrome` does **not** bump the version, commit, tag, or
+create a GitHub Release — the Firefox flow owns the version and tag. Run the
+Firefox release first (bumps + tags `vX.Y.Z`), then ship the same version to
+Chrome:
+
+- **CI:** trigger the **Publish Chrome** workflow after the **Publish** workflow.
+- **Local:** `npm run publish:chrome` (reads `CHROME_*` creds from `.env`).
+
+`publish:chrome` builds the `.zip` from the current `src/manifest.json` version
+and uploads with `--auto-publish` (goes live once review passes). Unlike AMO
+signing, Chrome gates every submission behind a review, so a Chrome release is
+not instant.
+
 ### Handling rejected pushes
 
 The CI publish workflow pushes version bump commits. If `git push` is rejected, rebase first:

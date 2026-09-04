@@ -9,15 +9,19 @@
     "test:e2e:smoke": "npx playwright test --project=smoke",
     "test:e2e:all": "npx playwright test",
     "screenshot": "npx playwright test --project=screenshot",
+    "screenshot:store": "npx playwright test --project=store-screenshot",
     "prepare": "git config core.hooksPath .githooks",
     "build:firefox": "web-ext build --source-dir src --artifacts-dir dist",
-    "publish:firefox": "node scripts/publish.js"
+    "build:chrome": "web-ext build --source-dir src --artifacts-dir dist --overwrite-dest",
+    "publish:firefox": "node scripts/publish.js",
+    "publish:chrome": "node scripts/publish-chrome.js"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "@playwright/test": "^1.61.1",
+    "chrome-webstore-upload-cli": "^4.0.1",
     "express": "^5.2.1",
     "vitest": "^4.1.9",
     "web-ext": "^10.4.0"
