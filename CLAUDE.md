@@ -97,7 +97,7 @@ The GitHub Actions publish workflow pushes commits (version bumps). If `git push
 
 - **CI workflow** (`.github/workflows/ci.yml`) — runs on push/PR to main: `npm test` + `web-ext lint` + Playwright E2E (`panel` project only, Chromium)
 - **Publish workflow** (`.github/workflows/publish.yml`) — manual dispatch: bumps version, signs with Mozilla, creates GitHub Release with `.xpi`
-- **Publish Chrome workflow** (`.github/workflows/publish-chrome.yml`) — manual dispatch: builds `.zip` from current version and uploads to the Chrome Web Store (no bump/git). Run after the Firefox Publish workflow. Needs `CHROME_EXTENSION_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN` secrets.
+- **Publish Chrome workflow** (`.github/workflows/publish-chrome.yml`) — manual dispatch: builds `.zip` from current version and uploads to the Chrome Web Store (no bump/git). Run after the Firefox Publish workflow. Needs `CHROME_EXTENSION_ID`, `CHROME_PUBLISHER_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN` secrets.
 
 ## Publishing
 

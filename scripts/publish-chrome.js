@@ -13,8 +13,10 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-// chrome-webstore-upload-cli reads these env vars directly.
-const required = ["EXTENSION_ID", "CLIENT_ID", "CLIENT_SECRET", "REFRESH_TOKEN"];
+// chrome-webstore-upload-cli reads these env vars directly. PUBLISHER_ID is
+// required by chrome-webstore-upload v6+ (the new Web Store API v2 is
+// publisher-scoped); it is the developer-account ID, not the extension ID.
+const required = ["EXTENSION_ID", "PUBLISHER_ID", "CLIENT_ID", "CLIENT_SECRET", "REFRESH_TOKEN"];
 const missing = required.filter((k) => !process.env[k]);
 if (missing.length) {
   console.error(`Missing Chrome Web Store credentials: ${missing.join(", ")}`);

@@ -138,14 +138,19 @@ and `background.scripts` are ignored by Chrome. Do **not** add a Chrome
    upload a first `.zip` (`npm run build:chrome`) to **create the item**, set
    visibility to **Unlisted**, complete the listing, and submit for review. This
    assigns the permanent **extension ID**. The API cannot create an item — only
-   this first upload can.
+   this first upload can. Note your **publisher ID** too (the developer-account
+   identifier in the dev-console URL, not the extension ID) — the Web Store API
+   v2 used by `chrome-webstore-upload` v6+ requires it.
 2. Create API credentials for automation: in Google Cloud Console create a
    project, enable the **Chrome Web Store API**, create an **OAuth 2.0 Client ID**
-   (Desktop app) for `CLIENT_ID`/`CLIENT_SECRET`, then run the OAuth flow once to
-   get a long-lived `REFRESH_TOKEN` (see the
+   for `CLIENT_ID`/`CLIENT_SECRET`, then run the OAuth flow once to get a
+   long-lived `REFRESH_TOKEN` (see the
    [chrome-webstore-upload-cli docs](https://github.com/fregante/chrome-webstore-upload-cli)).
-3. Store `EXTENSION_ID`, `CLIENT_ID`, `CLIENT_SECRET`, `REFRESH_TOKEN` as GitHub
-   Actions secrets (`CHROME_*`) and, for local publishing, in `.env`.
+   **Set the OAuth consent screen to "In production"** before minting the token —
+   tokens from a "Testing"-status app expire after 7 days.
+3. Store `EXTENSION_ID`, `PUBLISHER_ID`, `CLIENT_ID`, `CLIENT_SECRET`,
+   `REFRESH_TOKEN` as GitHub Actions secrets (`CHROME_*`) and, for local
+   publishing, in `.env`.
 
 ### Publishing a release
 
