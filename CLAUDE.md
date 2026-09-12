@@ -27,7 +27,7 @@ refactor: Extract CBOR detection into shared helper
 
 ## Project overview
 
-Firefox/Chrome DevTools extension that auto-decodes CBOR (specifically Smithy RPC v2 CBOR) responses into syntax-highlighted JSON. Self-hosted via GitHub Releases with auto-updates for Firefox.
+Firefox/Chrome DevTools extension that auto-decodes CBOR (specifically Smithy RPC v2 CBOR) responses into syntax-highlighted JSON. Distributed for Firefox via self-hosted GitHub Releases (auto-updates through `updates.json`) and for Chrome via the Chrome Web Store (store-managed auto-updates).
 
 ## Build & test
 

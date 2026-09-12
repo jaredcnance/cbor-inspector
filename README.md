@@ -22,7 +22,7 @@ Install the latest signed extension from [GitHub Releases](https://github.com/ja
 
 ### Chrome
 
-Chrome installation currently requires loading the extension manually in developer mode (see Development section below).
+Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/cbor-decoder/oioopgbckjkmiaiaebenlmknkdcfgbio) and click **Add to Chrome**. Updates are delivered automatically.
 
 ## Usage
 
